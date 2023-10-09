@@ -46,9 +46,12 @@
 inicializa_matriz:
 		push {r1-r7, lr}		@;guardar registros utilizados
 		
-		ldr r4, =mapas			@;obtenir mapa de configuració
-		add r4, r1, lsl #1		@;r4 = @mapa_config
 		mov r7, r0				@;copia @matriu
+		ldr r4, =mapas			@;obtenir mapa de configuració
+		mov r3, #ROWS
+		mov r5, #COLUMNS
+		mul r5, r3
+		mla r4, r1, r5, r4		@;r4 = @mapa_config
 
 		mov r1, #0				@; i = 0; (ROWS)
 		mov r5, #0				@; offset r0
