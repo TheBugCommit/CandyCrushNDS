@@ -48,21 +48,21 @@ cuenta_repeticiones:
 		and r5, #7				@;R5 es el valor filtrado (sin marcas de gel.)
 		mov r0, #1				@;R0 = número de repeticiones
 
-		cmp r3, #0
-		beq .Lconrep_este
-		cmp r3, #1
-		beq .Lconrep_sur
-		cmp r3, #2
-		beq .Lconrep_oeste
-		cmp r3, #3
-		beq .Lconrep_norte
-		b .Lconrep_fin
+		cmp r3, #EAST
+		beq .Lconrep_east
+		cmp r3, #SOUTH
+		beq .Lconrep_south
+		cmp r3, #WEST
+		beq .Lconrep_west
+		cmp r3, #NORTH
+		beq .Lconrep_north
+		b .Lconrep_end
 		
-		.Lconrep_este:
+		.Lconrep_east:
 			add r2, #1
 
 			cmp r2, #COLUMNS
-			bhs .Lconrep_fin
+			bhs .Lconrep_end
 
 			add r4, #1
 			ldrb r6, [r4]
@@ -71,13 +71,13 @@ cuenta_repeticiones:
 			cmp r3, r5			
 			addeq r0, #1
 
-			b .Lconrep_este
+			b .Lconrep_east
 
-		.Lconrep_oeste:
+		.Lconrep_west:
 			sub r2, #1
 
 			cmp r2, #0
-			blt .Lconrep_fin
+			blt .Lconrep_end
 
 			sub r4, #1
 			ldrb r6, [r4]
@@ -86,13 +86,13 @@ cuenta_repeticiones:
 			cmp r3, r5			
 			addeq r0, #1
 
-			b .Lconrep_oeste
+			b .Lconrep_west
 
-		.Lconrep_norte:
+		.Lconrep_north:
 			sub r1, #1
 
 			cmp r1, #0
-			blt .Lconrep_fin
+			blt .Lconrep_end
 
 			sub r4, #COLUMNS
 			ldrb r2, [r4]
@@ -101,13 +101,13 @@ cuenta_repeticiones:
 			cmp r3, r5			
 			addeq r0, #1
 
-			b .Lconrep_norte
+			b .Lconrep_north
 
-		.Lconrep_sur:
+		.Lconrep_south:
 			add r1, #1
 
 			cmp r1, #ROWS
-			bhs .Lconrep_fin
+			bhs .Lconrep_end
 
 			add r4, #COLUMNS
 			ldrb r2, [r4]
@@ -116,9 +116,9 @@ cuenta_repeticiones:
 			cmp r3, r5			
 			addeq r0, #1
 
-			b .Lconrep_sur
+			b .Lconrep_south
 
-		.Lconrep_fin:
+		.Lconrep_end:
 
 		pop {r1-r2, r3-r6, pc}
 

@@ -1,5 +1,12 @@
 @;=== candy1_incl.i: definiciones comunes para ficheros en ensamblador  ===
 
-@; Rango de los números de filas y de columnas -> mínimo: 3, máximo: 11
+@; Rango de los nï¿½meros de filas y de columnas -> mï¿½nimo: 3, mï¿½ximo: 11
 ROWS = 9
 COLUMNS = 9
+
+
+@; Direccions
+EAST = 0
+SOUTH = 1
+WEST = 2
+NORTH = 3
