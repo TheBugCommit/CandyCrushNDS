@@ -39,7 +39,7 @@
 @;		R0 = n�mero de repeticiones detectadas (m�nimo 1)
 	.global cuenta_repeticiones
 cuenta_repeticiones:
-		push {r1-r2, r4-r6, lr}
+		push {r1-r2, r3-r6, lr}
 		
 		mov r5, #COLUMNS
 		mla r6, r1, r5, r2
@@ -74,13 +74,12 @@ cuenta_repeticiones:
 			b .Lconrep_este
 
 		.Lconrep_oeste:
-
-			cmp r2, #0
-			bls .Lconrep_fin
-
 			sub r2, #1
 
-			sub r4, r2
+			cmp r2, #0
+			blt .Lconrep_fin
+
+			sub r4, #1
 			ldrb r6, [r4]
 			and r3, r6, #7		 
 
@@ -90,11 +89,10 @@ cuenta_repeticiones:
 			b .Lconrep_oeste
 
 		.Lconrep_norte:
+			sub r1, #1
 
 			cmp r1, #0
-			bls .Lconrep_fin
-			
-			sub r1, #1
+			blt .Lconrep_fin
 
 			sub r4, #COLUMNS
 			ldrb r2, [r4]
@@ -122,7 +120,7 @@ cuenta_repeticiones:
 
 		.Lconrep_fin:
 
-		pop {r1-r2, r4-r6, pc}
+		pop {r1-r2, r3-r6, pc}
 
 
 
