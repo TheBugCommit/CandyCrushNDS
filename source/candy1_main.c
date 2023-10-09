@@ -2,8 +2,8 @@
 
 	$ candy1_main.c $
 
-	Programa principal para la práctica de Computadores: candy-crash para NDS
-	(2º curso de Grado de Ingeniería Informática - ETSE - URV)
+	Programa principal para la prï¿½ctica de Computadores: candy-crash para NDS
+	(2ï¿½ curso de Grado de Ingenierï¿½a Informï¿½tica - ETSE - URV)
 	
 	Analista-programador: santiago.romani@urv.cat
 	Programador 1: xxx.xxx@estudiants.urv.cat
@@ -20,16 +20,16 @@
 
 /* variables globales */
 char matrix[ROWS][COLUMNS];		// matriz global de juego
-int seed32;						// semilla de números aleatorios
+int seed32;						// semilla de nï¿½meros aleatorios
 int level = 0;					// nivel del juego (nivel inicial = 0)
 int points;						// contador global de puntos
-int movements;					// número de movimientos restantes
-int gelees;						// número de gelatinas restantes
+int movements;					// nï¿½mero de movimientos restantes
+int gelees;						// nï¿½mero de gelatinas restantes
 
 
 
 /* actualizar_contadores(code): actualiza los contadores que se indican con el
-	parámetro 'code', que es una combinación binaria de booleanos, con el
+	parï¿½metro 'code', que es una combinaciï¿½n binaria de booleanos, con el
 	siguiente significado para cada bit:
 		bit 0:	nivel
 		bit 1:	puntos
@@ -46,7 +46,7 @@ void actualizar_contadores(int code)
 
 
 /* ---------------------------------------------------------------- */
-/* candy1_main.c : función principal main() para test de tarea 1E 	*/
+/* candy1_main.c : funciï¿½n principal main() para test de tarea 1E 	*/
 /* ---------------------------------------------------------------- */
 #define NUMTESTS 14
 short nmap[] = {4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 8};
@@ -60,10 +60,10 @@ int main(void)
 	int ntest = 0;
 	int result;
 
-	consoleDemoInit();			// inicialización de pantalla de texto
+	consoleDemoInit();			// inicializaciï¿½n de pantalla de texto
 	printf("candyNDS (prueba tarea 1E)\n");
 	printf("\x1b[38m\x1b[1;0H  nivel:");
-	level = nmap[0];
+	level = nmap[ntest];
 	actualizar_contadores(1);
 	copia_mapa(matrix, level);
 	escribe_matriz_debug(matrix);
@@ -80,7 +80,7 @@ int main(void)
 		printf("\x1b[38m\x1b[5;19H (pulse A/B)");
 		do
 		{	swiWaitForVBlank();
-			scanKeys();					// esperar pulsación tecla 'A' o 'B'
+			scanKeys();					// esperar pulsaciï¿½n tecla 'A' o 'B'
 		} while (!(keysHeld() & (KEY_A | KEY_B)));
 		printf("\x1b[2;0H                               ");
 		printf("\x1b[3;0H                               ");
@@ -91,8 +91,8 @@ int main(void)
 		{
 			ntest++;				// siguiente test
 			if ((ntest < NUMTESTS) && (nmap[ntest] != level))
-			{				// si número de mapa del siguiente test diferente
-				level = nmap[ntest];		// del número de mapa actual,
+			{				// si nï¿½mero de mapa del siguiente test diferente
+				level = nmap[ntest];		// del nï¿½mero de mapa actual,
 				actualizar_contadores(1);		// cambiar el mapa actual
 				copia_mapa(matrix, level);
 				escribe_matriz_debug(matrix);
