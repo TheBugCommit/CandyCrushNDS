@@ -10,8 +10,7 @@
 .include "../include/candy1_incl.i"
 
 
-
-@;-- .text. código de las rutinas ---
+@;-- .text. cï¿½digo de las rutinas ---
 .text	
 		.align 2
 		.arm
@@ -20,38 +19,233 @@
 
 @;TAREA 1G;
 @; hay_combinacion(*matriz): rutina para detectar si existe, por lo menos, una
-@;	combinación entre dos elementos (diferentes) consecutivos que provoquen
-@;	una secuencia válida, incluyendo elementos en gelatinas simples y dobles.
-@;	Parámetros:
-@;		R0 = dirección base de la matriz de juego
+@;	combinaciï¿½n entre dos elementos (diferentes) consecutivos que provoquen
+@;	una secuencia vï¿½lida, incluyendo elementos en gelatinas simples y dobles.
+@;	Parï¿½metros:
+@;		R0 = direcciï¿½n base de la matriz de juego
 @;	Resultado:
 @;		R0 = 1 si hay una secuencia, 0 en otro caso
 	.global hay_combinacion
 hay_combinacion:
-		push {lr}
+		push {r1-r7, lr}
 		
-		
-		pop {pc}
+		mov r7, r0						@; copy matrix 
 
+		mov r1, #0						@; i = 0;
+		mov r5, #0						@; matrix offset
+		.Lfor_rows_hcomb:
+			mov r2, #0  				@; j = 0;
+			.Lfor_cols_hcomb:
+				ldrb r6, [r7, r5]		@; r6 = matrix[i][j]
+
+				.Lif_void:
+					mov r0, r6
+					bl is_element
+					cmp r0, #0
+					beq .Lend_void_if
+
+					.Lif_no_last_column:
+						cmp r2, #COLUMNS - 1 				@; if (j < COLUMNS - 1)
+						bhs .Lend_no_last_column_if
+
+						mov r0, r7
+						mov r3, r1							@; r3 = i
+						add r4, r2, #1 						@; r4 = j + 1
+						bl detect_combination
+						cmp r0, #1
+						beq .Lend_for_rows_hcomb
+					.Lend_no_last_column_if:
+
+					.Lif_no_last_row:
+						cmp r1, #ROWS - 1 				@; if (i < ROWS - 1)
+						bhs .Lend_no_last_row_if
+
+						mov r0, r7
+						add r3, r1, #1					@; r3 = i + 1
+						mov r4, r2 						@; r4 = j
+						bl detect_combination
+						cmp r0, #1
+						beq .Lend_for_rows_hcomb
+					.Lend_no_last_row_if:
+				.Lend_void_if:
+
+				add r2, #1				@; j++
+
+				cmp r2, #COLUMNS		@; j < COLUMNS
+				blo .Lfor_cols_hcomb
+			.Lend_for_cols_hcomb:
+
+			add r1, #1					@; i++
+
+			cmp r1, #ROWS				@; i < ROWS
+			blo .Lfor_rows_hcomb
+		.Lend_for_rows_hcomb:
+		
+		pop {r1-r7, pc}
+
+
+@; R0 = @matrix
+@; R1 = row code1
+@; R2 = column code 1
+@; R3 = row code 2
+@; R4 = column code 2
+@; return R0 = 1 or 0
+detect_combination:
+	push {r1-r6, lr}
+		mov r5, r0								@; copy @matrix
+		mov r6, #0								@; combination = false
+
+		.Lif_can_change_codes:
+			bl can_change_codes					@; if can change codes => change codes
+			cmp r0, #0
+			moveq r0, #0
+			beq .Lend_can_change_codes_if
+
+			mov r0, r5
+			bl change_codes
+
+			mov r4, r5							@; copy @matrix
+			bl detectar_orientacion
+			cmp r0, #6
+			bne .Lcomb_detected
+
+			mov r1, r3							@; r1 = row code 2
+			mov r2, r4							@; r2 = column code 2
+			mov r4, r5							@; copy @matrix
+			bl detectar_orientacion
+			cmp r0, #6
+			bne .Lcomb_detected
+
+			.Lcomb_detected:
+				movne r6, #1					@; combination = true
+			
+			mov r0, r8
+			ldr r1, [sp]					
+			ldr r2, [sp, #4]
+			ldr r4, [sp, #16]
+			bl change_codes
+
+		.Lend_can_change_codes_if:
+
+		mov r0, r6								@; return combination 
+
+	pop {r1-r6, pc}
+
+@; R0 = @matrix
+@; R1 = row code 1
+@; R2 = column code 1
+@; R3 = row code 2
+@; R4 = column code 2
+@; Returns r0 = 1 or 0
+can_change_codes:
+	push {r1-r8, lr}
+		mov r8, #COLUMNS
+		
+		mla r7, r1, r8, r2		@; r7 = offset code 1
+		ldrb r5, [r0, r7]		@; r5 = code 1
+		
+		mla r7, r1, r8, r2		@; r7 = offset code 2
+		ldrb r6, [r0, r7]		@; r6 = code 2
+
+		.Lif_can_change:
+			mov r0, r6				@; check if code 2 is an element
+			bl is_element
+			cmp r0, #0				@; if not an element return 0
+			beq .Lend_can_change_if
+
+			and r7, r5, #7			@; r7 have 3 lower bits of code 1
+			and r8, r6, #7			@; r8 have 3 lower bits of code 2
+			cmp r7, r8				@; if(code1 == code2) return 0
+			beq .Lend_can_change_if
+		.Lend_can_change_if:
+
+		moveq r0, #0				@; If code 2 is not an element, or code1 == code2 return 0
+		movne r0, #1				@; if code 2 is an element && code1 != code2 return 1 
+
+	pop {r1-r8, pc}
+
+@; R0 = @matrix
+@; R1 = row code 1
+@; R2 = column code 1
+@; R3 = row code 2
+@; R4 = column code 2
+change_codes:
+	push {r0-r8, lr}
+		mov r7, #COLUMNS
+		
+		mla r6, r1, r7, r2		@; r6 = offset code 1
+		ldrb r5, [r0, r6]		@; r5 = code 1
+		
+		mla r8, r3, r7, r4		@; r8 = offset code 2
+		ldrb r7, [r0, r8]		@; r7 = code 2
+
+		strb r5, [r0, r8]		@; write code1 => @code2
+		strb r7, [r0, r6]		@; write code2 => @code1
+
+	pop {r0-r8, pc}
+
+@; Returns if the value it's an element or not
+@;	R0 = element
+
+@; r0 = 1 or 0
+	.global is_element
+is_element:
+	push {r1, lr}
+		mov r1, r0				@; copy r0
+		
+		.Lif_is_elment:
+			bl is_void_element
+			cmp r0, #1
+			beq .Lend_is_element_if
+
+			mov r0, r1
+			bl is_solid_or_gap_element
+			cmp r0, #1
+		.Lend_is_element_if:
+
+		moveq r0, #0			@; is_element = false
+		movne r0, #1			@; is_element = true
+	pop {r1, pc}
+
+@; R0 = element
+@; r0 = 1 or 0
+	.global is_void_element
+is_void_element:
+	push {lr}
+		tst r0, #7
+		moveq r0, #1
+		movne r0, #0
+	pop {pc}
+	
+@; R0 = element
+@; r0 = 1 or 0
+	.global is_solid_or_gap_element
+is_solid_or_gap_element:
+	push {lr}
+		and r0, #7		
+		teq r0, #7
+		moveq r0, #1
+		movne r0, #0	
+	pop {pc}
 
 
 @;TAREA 1H;
-@; sugiere_combinacion(*matriz, *sug): rutina para detectar una combinación
+@; sugiere_combinacion(*matriz, *sug): rutina para detectar una combinaciï¿½n
 @;	entre dos elementos (diferentes) consecutivos que provoquen una secuencia
-@;	válida, incluyendo elementos en gelatinas simples y dobles, y devolver
-@;	las coordenadas de las tres posiciones de la combinación (por referencia).
+@;	vï¿½lida, incluyendo elementos en gelatinas simples y dobles, y devolver
+@;	las coordenadas de las tres posiciones de la combinaciï¿½n (por referencia).
 @;	Restricciones:
-@;		* se supone que existe por lo menos una combinación en la matriz
+@;		* se supone que existe por lo menos una combinaciï¿½n en la matriz
 @;			 (se debe verificar antes con la rutina 'hay_combinacion')
-@;		* la combinación sugerida tiene que ser escogida aleatoriamente de
+@;		* la combinaciï¿½n sugerida tiene que ser escogida aleatoriamente de
 @;			 entre todas las posibles, es decir, no tiene que ser siempre
 @;			 la primera empezando por el principio de la matriz (o por el final)
-@;		* para obtener posiciones aleatorias, se invocará la rutina 'mod_random'
+@;		* para obtener posiciones aleatorias, se invocarï¿½ la rutina 'mod_random'
 @;			 (ver fichero "candy1_init.s")
-@;	Parámetros:
-@;		R0 = dirección base de la matriz de juego
-@;		R1 = dirección del vector de posiciones (char *), donde la rutina
-@;				guardará las coordenadas (x1,y1,x2,y2,x3,y3), consecutivamente.
+@;	Parï¿½metros:
+@;		R0 = direcciï¿½n base de la matriz de juego
+@;		R1 = direcciï¿½n del vector de posiciones (char *), donde la rutina
+@;				guardarï¿½ las coordenadas (x1,y1,x2,y2,x3,y3), consecutivamente.
 	.global sugiere_combinacion
 sugiere_combinacion:
 		push {lr}
@@ -67,21 +261,21 @@ sugiere_combinacion:
 
 
 @; generar_posiciones(vect_pos,f,c,ori,cpi): genera las posiciones de sugerencia
-@;	de combinación, a partir de la posición inicial (f,c), el código de
-@;	orientación 'ori' y el código de posición inicial 'cpi', dejando las
+@;	de combinaciï¿½n, a partir de la posiciï¿½n inicial (f,c), el cï¿½digo de
+@;	orientaciï¿½n 'ori' y el cï¿½digo de posiciï¿½n inicial 'cpi', dejando las
 @;	coordenadas en el vector 'vect_pos'.
 @;	Restricciones:
-@;		* se supone que la posición y orientación pasadas por parámetro se
-@;			corresponden con una disposición de posiciones dentro de los límites
+@;		* se supone que la posiciï¿½n y orientaciï¿½n pasadas por parï¿½metro se
+@;			corresponden con una disposiciï¿½n de posiciones dentro de los lï¿½mites
 @;			de la matriz de juego
-@;	Parámetros:
-@;		R0 = dirección del vector de posiciones 'vect_pos'
+@;	Parï¿½metros:
+@;		R0 = direcciï¿½n del vector de posiciones 'vect_pos'
 @;		R1 = fila inicial 'f'
 @;		R2 = columna inicial 'c'
-@;		R3 = código de orientación;
+@;		R3 = cï¿½digo de orientaciï¿½n;
 @;				inicio de secuencia: 0 -> Este, 1 -> Sur, 2 -> Oeste, 3 -> Norte
 @;				en medio de secuencia: 4 -> horizontal, 5 -> vertical
-@;		R4 = código de posición inicial:
+@;		R4 = cï¿½digo de posiciï¿½n inicial:
 @;				0 -> izquierda, 1 -> derecha, 2 -> arriba, 3 -> abajo
 @;	Resultado:
 @;		vector de posiciones (x1,y1,x2,y2,x3,y3), devuelto por referencia
@@ -93,33 +287,69 @@ generar_posiciones:
 
 
 
-@; detectar_orientacion(f,c,mat): devuelve el código de la primera orientación
-@;	en la que detecta una secuencia de 3 o más repeticiones del elemento de la
-@;	matriz situado en la posición (f,c).
+@; detectar_orientacion(f,c,mat): devuelve el cï¿½digo de la primera orientaciï¿½n
+@;	en la que detecta una secuencia de 3 o mï¿½s repeticiones del elemento de la
+@;	matriz situado en la posiciï¿½n (f,c).
 @;	Restricciones:
-@;		* para proporcionar aleatoriedad a la detección de orientaciones en las
-@;			que se detectan secuencias, se invocará la rutina 'mod_random'
+@;		* para proporcionar aleatoriedad a la detecciï¿½n de orientaciones en las
+@;			que se detectan secuencias, se invocarï¿½ la rutina 'mod_random'
 @;			(ver fichero "candy1_init.s")
-@;		* para detectar secuencias se invocará la rutina 'cuenta_repeticiones'
+@;		* para detectar secuencias se invocarï¿½ la rutina 'cuenta_repeticiones'
 @;			(ver fichero "candy1_move.s")
-@;		* sólo se tendrán en cuenta los 3 bits de menor peso de los códigos
-@;			almacenados en las posiciones de la matriz, de modo que se ignorarán
+@;		* sï¿½lo se tendrï¿½n en cuenta los 3 bits de menor peso de los cï¿½digos
+@;			almacenados en las posiciones de la matriz, de modo que se ignorarï¿½n
 @;			las marcas de gelatina (+8, +16)
-@;	Parámetros:
+@;	Parï¿½metros:
 @;		R1 = fila 'f'
 @;		R2 = columna 'c'
-@;		R4 = dirección base de la matriz
+@;		R4 = direcciï¿½n base de la matriz
 @;	Resultado:
-@;		R0 = código de orientación;
+@;		R0 = cï¿½digo de orientaciï¿½n;
 @;				inicio de secuencia: 0 -> Este, 1 -> Sur, 2 -> Oeste, 3 -> Norte
 @;				en medio de secuencia: 4 -> horizontal, 5 -> vertical
 @;				sin secuencia: 6 
 detectar_orientacion:
-		push {r3,r5,lr}
+		push {r3, r5, lr}
 		
+		mov r5, #0				@;R5 = Ã­ndice bucle de orientaciones
+		mov r0, #4
+		bl mod_random
+		mov r3, r0				@;R3 = orientaciÃ³n aleatoria (0..3)
+	.Ldetori_for:
+		mov r0, r4
+		bl cuenta_repeticiones
+		cmp r0, #1
+		beq .Ldetori_cont		@;no hay inicio de secuencia
+		cmp r0, #3
+		bhs .Ldetori_fin		@;hay inicio de secuencia
+		add r3, #2
+		and r3, #3				@;R3 = salta dos orientaciones (mÃ³dulo 4)
+		mov r0, r4
+		bl cuenta_repeticiones
+		add r3, #2
+		and r3, #3				@;restituye orientaciÃ³n (mÃ³dulo 4)
+		cmp r0, #1
+		beq .Ldetori_cont		@;no hay continuaciÃ³n de secuencia
+		tst r3, #1
+		bne .Ldetori_vert
+		mov r3, #4				@;detecciÃ³n secuencia horizontal
+		b .Ldetori_fin
+	.Ldetori_vert:
+		mov r3, #5				@;detecciÃ³n secuencia vertical
+		b .Ldetori_fin
+	.Ldetori_cont:
+		add r3, #1
+		and r3, #3				@;R3 = siguiente orientaciÃ³n (mÃ³dulo 4)
+		add r5, #1
+		cmp r5, #4
+		blo .Ldetori_for		@;repetir 4 veces
 		
-		pop {r3,r5,pc}
-
+		mov r3, #6				@;marca de no encontrada
+		
+	.Ldetori_fin:
+		mov r0, r3				@;devuelve orientaciÃ³n o marca de no encontrada
+		
+		pop {r3, r5, pc}
 
 
 .end
