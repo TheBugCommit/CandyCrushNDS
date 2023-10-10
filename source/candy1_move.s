@@ -70,6 +70,7 @@ cuenta_repeticiones:
 
 			cmp r3, r5			
 			addeq r0, #1
+			bne .Lconrep_end
 
 			b .Lconrep_east
 
@@ -85,6 +86,7 @@ cuenta_repeticiones:
 
 			cmp r3, r5			
 			addeq r0, #1
+			bne .Lconrep_end
 
 			b .Lconrep_west
 
@@ -100,6 +102,7 @@ cuenta_repeticiones:
 
 			cmp r3, r5			
 			addeq r0, #1
+			bne .Lconrep_end
 
 			b .Lconrep_north
 
@@ -115,6 +118,7 @@ cuenta_repeticiones:
 
 			cmp r3, r5			
 			addeq r0, #1
+			bne .Lconrep_end
 
 			b .Lconrep_south
 
