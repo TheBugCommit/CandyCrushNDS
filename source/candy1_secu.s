@@ -14,13 +14,13 @@
 @;-- .bss. variables (globales) no inicializadas ---
 .bss
 		.align 2
-@; número de secuencia: se utiliza para generar números de secuencia únicos,
+@; nï¿½mero de secuencia: se utiliza para generar nï¿½meros de secuencia ï¿½nicos,
 @;	(ver rutinas 'marcar_horizontales' y 'marcar_verticales') 
 	num_sec:	.space 1
 
 
 
-@;-- .text. código de las rutinas ---
+@;-- .text. cï¿½digo de las rutinas ---
 .text	
 		.align 2
 		.arm
@@ -32,32 +32,81 @@
 @;	secuencia de tres elementos iguales consecutivos, en horizontal o en
 @;	vertical, incluyendo elementos en gelatinas simples y dobles.
 @;	Restricciones:
-@;		* para detectar secuencias se invocará la rutina 'cuenta_repeticiones'
+@;		* para detectar secuencias se invocarï¿½ la rutina 'cuenta_repeticiones'
 @;			(ver fichero "candy1_move.s")
-@;	Parámetros:
-@;		R0 = dirección base de la matriz de juego
+@;	Parï¿½metros:
+@;		R0 = direcciï¿½n base de la matriz de juego
 @;	Resultado:
 @;		R0 = 1 si hay una secuencia, 0 en otro caso
 	.global hay_secuencia
 hay_secuencia:
-		push {lr}
-		
-		
-		pop {pc}
+		push {r1-r7, lr}
 
+		mov r7, r0			@; copy @matrix
+		mov r6, #0			@; sequence = false
+		mov r1, #0			@; i = 0
+		mov r5, #0			@; offset per r0
+
+		.Lfor_rows:
+			mov r2, #0		@; j = 0
+			.Lfor_cols:
+				ldrb r4, [r7, r5]			@; r3 = matrix[i][j] 
+										
+				.Lif_solid_block: 		
+					tst r4, #7				@; if(r3 & 0x07 != 0) (0, 8, 16)
+					beq .Lend_solid_block_if
+
+					and r3, r4, #7			@; 3 lower bits
+					teq r3, #7				@; r3 XOR 0x07 == 0 => (7, 15)
+					beq .Lend_solid_block_if
+
+					cmp r2, #COLUMNS - 2 	@; if(j < #COLUMNS - 2) 
+					movlo r0, r7			@; r0 = @matrix
+					movlo r3, #EAST
+					bllo cuenta_repeticiones
+					cmp r0, #3				@; if(reps >= 3)
+					movhs r6, #1
+					bhs .Lend_for_rows
+
+					cmp r1, #ROWS - 2		@; if(i < #ROWS - 2)
+					movlo r0, r7			@; r0 = @matrix
+					movlo r3, #SOUTH
+					bllo cuenta_repeticiones 
+					cmp r0, #3				@; if(reps >= 3)
+					movhs r6, #1
+					bhs .Lend_for_rows
+
+				.Lend_solid_block_if:
+				
+				add r5, #1  		@; increment r0, offset
+				add r2, #1			@; j++
+
+				cmp r2, #COLUMNS 	@; j < COLUMNS
+				blo .Lfor_cols
+			.Lend_for_cols:
+
+			add r1, #1		@; i++
+			
+			cmp r1, #ROWS	@; i < ROWS
+			blo .Lfor_rows
+		.Lend_for_rows:
+
+		mov r0, r6			@; sequence = 1 | 0
+
+		pop {r1-r7, pc}
 
 
 @;TAREA 1D;
 @; elimina_secuencias(*matriz, *marcas): rutina para eliminar todas las
-@;	secuencias de 3 o más elementos repetidos consecutivamente en horizontal,
-@;	vertical o combinaciones, así como de reducir el nivel de gelatina en caso
+@;	secuencias de 3 o mï¿½s elementos repetidos consecutivamente en horizontal,
+@;	vertical o combinaciones, asï¿½ como de reducir el nivel de gelatina en caso
 @;	de que alguna casilla se encuentre en dicho modo; 
-@;	además, la rutina marca todos los conjuntos de secuencias sobre una matriz
-@;	de marcas que se pasa por referencia, utilizando un identificador único para
+@;	ademï¿½s, la rutina marca todos los conjuntos de secuencias sobre una matriz
+@;	de marcas que se pasa por referencia, utilizando un identificador ï¿½nico para
 @;	cada conjunto de secuencias (el resto de las posiciones se inicializan a 0). 
-@;	Parámetros:
-@;		R0 = dirección base de la matriz de juego
-@;		R1 = dirección de la matriz de marcas
+@;	Parï¿½metros:
+@;		R0 = direcciï¿½n base de la matriz de juego
+@;		R1 = direcciï¿½n de la matriz de marcas
 	.global elimina_secuencias
 elimina_secuencias:
 		push {lr}
@@ -71,19 +120,19 @@ elimina_secuencias:
 
 
 
-@; marcar_horizontales(mat): rutina para marcar todas las secuencias de 3 o más
-@;	elementos repetidos consecutivamente en horizontal, con un número identifi-
-@;	cativo diferente para cada secuencia, que empezará siempre por 1 y se irá
-@;	incrementando para cada nueva secuencia, y cuyo último valor se guardará en
-@;	la variable global 'num_sec'; las marcas se guardarán en la matriz que se
-@;	pasa por parámetro 'mat' (por referencia).
+@; marcar_horizontales(mat): rutina para marcar todas las secuencias de 3 o mï¿½s
+@;	elementos repetidos consecutivamente en horizontal, con un nï¿½mero identifi-
+@;	cativo diferente para cada secuencia, que empezarï¿½ siempre por 1 y se irï¿½
+@;	incrementando para cada nueva secuencia, y cuyo ï¿½ltimo valor se guardarï¿½ en
+@;	la variable global 'num_sec'; las marcas se guardarï¿½n en la matriz que se
+@;	pasa por parï¿½metro 'mat' (por referencia).
 @;	Restricciones:
-@;		* se supone que la matriz 'mat' está toda a ceros
-@;		* para detectar secuencias se invocará la rutina 'cuenta_repeticiones'
+@;		* se supone que la matriz 'mat' estï¿½ toda a ceros
+@;		* para detectar secuencias se invocarï¿½ la rutina 'cuenta_repeticiones'
 @;			(ver fichero "candy1_move.s")
-@;	Parámetros:
-@;		R0 = dirección base de la matriz de juego
-@;		R1 = dirección de la matriz de marcas
+@;	Parï¿½metros:
+@;		R0 = direcciï¿½n base de la matriz de juego
+@;		R1 = direcciï¿½n de la matriz de marcas
 marcar_horizontales:
 		push {lr}
 		
@@ -92,23 +141,23 @@ marcar_horizontales:
 
 
 
-@; marcar_verticales(mat): rutina para marcar todas las secuencias de 3 o más
-@;	elementos repetidos consecutivamente en vertical, con un número identifi-
-@;	cativo diferente para cada secuencia, que seguirá al último valor almacenado
-@;	en la variable global 'num_sec'; las marcas se guardarán en la matriz que se
-@;	pasa por parámetro 'mat' (por referencia);
-@;	sin embargo, habrá que preservar los identificadores de las secuencias
-@;	horizontales que intersecten con las secuencias verticales, que se habrán
+@; marcar_verticales(mat): rutina para marcar todas las secuencias de 3 o mï¿½s
+@;	elementos repetidos consecutivamente en vertical, con un nï¿½mero identifi-
+@;	cativo diferente para cada secuencia, que seguirï¿½ al ï¿½ltimo valor almacenado
+@;	en la variable global 'num_sec'; las marcas se guardarï¿½n en la matriz que se
+@;	pasa por parï¿½metro 'mat' (por referencia);
+@;	sin embargo, habrï¿½ que preservar los identificadores de las secuencias
+@;	horizontales que intersecten con las secuencias verticales, que se habrï¿½n
 @;	almacenado en en la matriz de referencia con la rutina anterior.
 @;	Restricciones:
-@;		* se supone que la matriz 'mat' está marcada con los identificadores
+@;		* se supone que la matriz 'mat' estï¿½ marcada con los identificadores
 @;			de las secuencias horizontales
-@;		* la variable 'num_sec' contendrá el siguiente indentificador (>=1)
-@;		* para detectar secuencias se invocará la rutina 'cuenta_repeticiones'
+@;		* la variable 'num_sec' contendrï¿½ el siguiente indentificador (>=1)
+@;		* para detectar secuencias se invocarï¿½ la rutina 'cuenta_repeticiones'
 @;			(ver fichero "candy1_move.s")
-@;	Parámetros:
-@;		R0 = dirección base de la matriz de juego
-@;		R1 = dirección de la matriz de marcas
+@;	Parï¿½metros:
+@;		R0 = direcciï¿½n base de la matriz de juego
+@;		R1 = direcciï¿½n de la matriz de marcas
 marcar_verticales:
 		push {lr}
 		
