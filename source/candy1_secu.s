@@ -47,17 +47,15 @@ hay_secuencia:
 		mov r1, #0			@; i = 0
 		mov r5, #0			@; offset per r0
 
-		.Lfor_rows:
+		.Lfor_rows_secu:
 			mov r2, #0		@; j = 0
-			.Lfor_cols:
+			.Lfor_cols_secu:
 				ldrb r4, [r7, r5]			@; r3 = matrix[i][j] 
 										
-				.Lif_solid_block: 		
-					tst r4, #7				@; if(r3 & 0x07 != 0) (0, 8, 16)
-					beq .Lend_solid_block_if
-
-					and r3, r4, #7			@; 3 lower bits
-					teq r3, #7				@; r3 XOR 0x07 == 0 => (7, 15)
+				.Lif_solid_block: 	
+					mov r0, r4
+					bl is_element
+					cmp r0, #0
 					beq .Lend_solid_block_if
 
 					cmp r2, #COLUMNS - 2 	@; if(j < #COLUMNS - 2) 
@@ -66,7 +64,7 @@ hay_secuencia:
 					bllo cuenta_repeticiones
 					cmp r0, #3				@; if(reps >= 3)
 					movhs r6, #1
-					bhs .Lend_for_rows
+					bhs .Lend_for_rows_secu
 
 					cmp r1, #ROWS - 2		@; if(i < #ROWS - 2)
 					movlo r0, r7			@; r0 = @matrix
@@ -74,7 +72,7 @@ hay_secuencia:
 					bllo cuenta_repeticiones 
 					cmp r0, #3				@; if(reps >= 3)
 					movhs r6, #1
-					bhs .Lend_for_rows
+					bhs .Lend_for_rows_secu
 
 				.Lend_solid_block_if:
 				
@@ -82,14 +80,14 @@ hay_secuencia:
 				add r2, #1			@; j++
 
 				cmp r2, #COLUMNS 	@; j < COLUMNS
-				blo .Lfor_cols
-			.Lend_for_cols:
+				blo .Lfor_cols_secu
+			.Lend_for_cols_secu:
 
 			add r1, #1		@; i++
 			
 			cmp r1, #ROWS	@; i < ROWS
-			blo .Lfor_rows
-		.Lend_for_rows:
+			blo .Lfor_rows_secu
+		.Lend_for_rows_secu:
 
 		mov r0, r6			@; sequence = 1 | 0
 

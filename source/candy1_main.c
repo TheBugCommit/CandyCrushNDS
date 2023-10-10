@@ -2,8 +2,8 @@
 
 	$ candy1_main.c $
 
-	Programa principal para la práctica de Computadores: candy-crash para NDS
-	(2º curso de Grado de Ingeniería Informática - ETSE - URV)
+	Programa principal para la prï¿½ctica de Computadores: candy-crash para NDS
+	(2ï¿½ curso de Grado de Ingenierï¿½a Informï¿½tica - ETSE - URV)
 	
 	Analista-programador: santiago.romani@urv.cat
 	Programador 1: xxx.xxx@estudiants.urv.cat
@@ -20,16 +20,16 @@
 
 /* variables globales */
 char matrix[ROWS][COLUMNS];		// matriz global de juego
-int seed32;						// semilla de números aleatorios
+int seed32;						// semilla de nï¿½meros aleatorios
 int level = 0;					// nivel del juego (nivel inicial = 0)
 int points;						// contador global de puntos
-int movements;					// número de movimientos restantes
-int gelees;						// número de gelatinas restantes
+int movements;					// nï¿½mero de movimientos restantes
+int gelees;						// nï¿½mero de gelatinas restantes
 
 
 
 /* actualizar_contadores(code): actualiza los contadores que se indican con el
-	parámetro 'code', que es una combinación binaria de booleanos, con el
+	parï¿½metro 'code', que es una combinaciï¿½n binaria de booleanos, con el
 	siguiente significado para cada bit:
 		bit 0:	nivel
 		bit 1:	puntos
@@ -46,19 +46,19 @@ void actualizar_contadores(int code)
 
 
 /* ---------------------------------------------------------------- */
-/* candy1_main.c : función principal main() para test de tarea 1C 	*/
+/* candy1_main.c : funciï¿½n principal main() para test de tarea 1C 	*/
 /*					(requiere tener implementada la tarea 1E)		*/
 /* ---------------------------------------------------------------- */
 int main(void)
 {
-	consoleDemoInit();			// inicialización de pantalla de texto
+	consoleDemoInit();			// inicializaciï¿½n de pantalla de texto
 	printf("candyNDS (prueba tarea 1C)\n");
 	printf("\x1b[38m\x1b[1;0H  nivel:");
 	actualizar_contadores(1);
 
 	do							// bucle principal de pruebas
 	{
-		copia_mapa(matrix, level);		// sustituye a inicializa_matriz()
+		inicializa_matriz(matrix, level);		// sustituye a inicializa_matriz()
 		escribe_matriz_debug(matrix);
 		if (hay_secuencia(matrix))			// si hay secuencias
 			printf("\x1b[39m\x1b[3;0H hay secuencia: SI");
@@ -68,7 +68,7 @@ int main(void)
 		printf("\x1b[38m\x1b[3;19H (pulse A/B)");
 		do
 		{	swiWaitForVBlank();
-			scanKeys();					// esperar pulsación tecla 'A' o 'B'
+			scanKeys();					// esperar pulsaciï¿½n tecla 'A' o 'B'
 		} while (!(keysHeld() & (KEY_A | KEY_B)));
 		printf("\x1b[3;0H                               ");
 		retardo(5);
