@@ -75,7 +75,7 @@ int main(void)
 			points = pun_obj[level];
 			if (hay_secuencia(matrix))			// si hay secuencias
 			{
-				//elimina_secuencias(matrix, mat_mar);	// eliminarlas
+				elimina_secuencias(matrix, mat_mar);	// eliminarlas
 				points += calcula_puntuaciones(mat_mar);
 				escribe_matriz(matrix);
 				falling = 1;							// iniciar bajada
@@ -85,7 +85,7 @@ int main(void)
 			gelees = contar_gelatinas(matrix);
 			actualizar_contadores(15);
 		}
-		/*else if (falling)		//////	SECCI�N BAJADA DE ELEMENTOS	//////
+		else if (falling)		//////	SECCI�N BAJADA DE ELEMENTOS	//////
 		{
 			falling = baja_elementos(matrix);	// realiza la siguiente bajada
 			retardo(4);
@@ -102,7 +102,7 @@ int main(void)
 				else change = 1;				// sino, revisar estado matriz
 			}
 			escribe_matriz(matrix);			// visualiza bajadas o eliminaciones
-		}*/
+		}
 		else					//////	SECCI�N DE JUGADAS	//////
 		{
 			if (procesar_touchscreen(matrix, &mX, &mY, &dX, &dY))
@@ -111,7 +111,7 @@ int main(void)
 				escribe_matriz(matrix);	  // muestra el movimiento por pantalla
 				if (hay_secuencia(matrix))	// si el movimiento es posible
 				{
-					//elimina_secuencias(matrix, mat_mar);
+					elimina_secuencias(matrix, mat_mar);
 					borra_puntuaciones();
 					points += calcula_puntuaciones(mat_mar);
 					falling = 1;
@@ -177,7 +177,7 @@ int main(void)
 				}
 				else
 				{
-					// recombina_elementos(matrix);
+					recombina_elementos(matrix);
 					escribe_matriz(matrix);
 					change = 1;					// forzar nueva verificaci�n
 				}								// de combinaciones
@@ -189,7 +189,7 @@ int main(void)
 		{
 			if (lapse == 192) 		// a los 8 segundos sin actividad (aprox.)
 			{
-				//sugiere_combinacion(matrix, pos_sug);
+				sugiere_combinacion(matrix, pos_sug);
 				borra_puntuaciones();
 			}
 			if ((lapse % 64) == 0)		// cada segundo (aprox.)
