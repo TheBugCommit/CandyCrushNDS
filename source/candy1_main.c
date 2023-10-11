@@ -45,10 +45,7 @@ void actualizar_contadores(int code)
 
 
 
-/* ---------------------------------------------------------------- */
-/* candy1_main.c : funci�n principal main() para test de tarea 1C 	*/
-/*					(requiere tener implementada la tarea 1E)		*/
-/* ---------------------------------------------------------------- */
+/* Programa principal: control general del juego */
 int main(void)
 {
 	int lapse = 0;				// contador de tiempo sin actividad del usuario
