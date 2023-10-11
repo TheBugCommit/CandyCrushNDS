@@ -27,9 +27,11 @@
 @;		R0 = 1 si hay una secuencia, 0 en otro caso
 	.global hay_combinacion
 hay_combinacion:
-		push {r1-r7, lr}
+		push {r1-r8, lr}
 		
 		mov r7, r0						@; copy matrix 
+
+		mov r8, #0						@; conbination = false
 
 		mov r1, #0						@; i = 0;
 		mov r5, #0						@; matrix offset
@@ -53,23 +55,26 @@ hay_combinacion:
 						add r4, r2, #1 						@; r4 = j + 1
 						bl detect_combination
 						cmp r0, #1
+						moveq r8, #1						@; conbination = true
 						beq .Lend_for_rows_hcomb
 					.Lend_no_last_column_if:
 
 					.Lif_no_last_row:
-						cmp r1, #ROWS - 1 				@; if (i < ROWS - 1)
+						cmp r1, #ROWS - 1 					@; if (i < ROWS - 1)
 						bhs .Lend_no_last_row_if
 
 						mov r0, r7
-						add r3, r1, #1					@; r3 = i + 1
-						mov r4, r2 						@; r4 = j
+						add r3, r1, #1						@; r3 = i + 1
+						mov r4, r2 							@; r4 = j
 						bl detect_combination
 						cmp r0, #1
+						moveq r8, #1						@; conbination = true
 						beq .Lend_for_rows_hcomb
 					.Lend_no_last_row_if:
 				.Lend_void_if:
 
 				add r2, #1				@; j++
+				add r5, #1				@; @matrix offset ++
 
 				cmp r2, #COLUMNS		@; j < COLUMNS
 				blo .Lfor_cols_hcomb
@@ -81,19 +86,30 @@ hay_combinacion:
 			blo .Lfor_rows_hcomb
 		.Lend_for_rows_hcomb:
 		
-		pop {r1-r7, pc}
+		mov r0, r8						@; return conbination
+
+		pop {r1-r8, pc}
 
 
-@; R0 = @matrix
-@; R1 = row code1
-@; R2 = column code 1
-@; R3 = row code 2
-@; R4 = column code 2
-@; return R0 = 1 or 0
+@; detect_combination(*matrix, row_code1, col_code1, row_code2, col_code2):
+@;	Given the coordinates of two elements, if possible, swap them, 
+@;  and check if there is any combination in any of those coordinates.
+@;	Params:
+@; 		R0 = @matrix
+@; 		R1 = row code1
+@; 		R2 = column code 1
+@; 		R3 = row code 2
+@; 		R4 = column code 2
+@;	Result:
+@;		R0 = 1 if combination, 0 otherwise 
 detect_combination:
-	push {r1-r6, lr}
+	push {r1-r9, lr}
 		mov r5, r0								@; copy @matrix
 		mov r6, #0								@; combination = false
+
+		mov r7, r4								@; copy column code 2
+		mov r8, r2								@; copy column code 1
+		mov r9, r1								@; copy row code 1
 
 		.Lif_can_change_codes:
 			bl can_change_codes					@; if can change codes => change codes
@@ -107,36 +123,41 @@ detect_combination:
 			mov r4, r5							@; copy @matrix
 			bl detectar_orientacion
 			cmp r0, #6
+			movne r6, #1						@; combination = true
 			bne .Lcomb_detected
 
 			mov r1, r3							@; r1 = row code 2
-			mov r2, r4							@; r2 = column code 2
+			mov r2, r7							@; r2 = column code 2
 			mov r4, r5							@; copy @matrix
 			bl detectar_orientacion
 			cmp r0, #6
+			movne r6, #1						@; combination = true
 			bne .Lcomb_detected
 
 			.Lcomb_detected:
-				movne r6, #1					@; combination = true
 			
-			mov r0, r8
-			ldr r1, [sp]					
-			ldr r2, [sp, #4]
-			ldr r4, [sp, #16]
+			mov r0, r5
+			mov r1, r9					
+			mov r2, r8
+			mov r4, r7
 			bl change_codes
 
 		.Lend_can_change_codes_if:
 
 		mov r0, r6								@; return combination 
 
-	pop {r1-r6, pc}
+	pop {r1-r9, pc}
 
-@; R0 = @matrix
-@; R1 = row code 1
-@; R2 = column code 1
-@; R3 = row code 2
-@; R4 = column code 2
-@; Returns r0 = 1 or 0
+@; can_change_codes(*matrix, row_code1, col_code1, row_code2, col_code2):
+@;	Given the coordinates of two elements, returns whether it is possible to exchange them
+@;	Params:
+@; 		R0 = @matrix
+@; 		R1 = row code1
+@; 		R2 = column code 1
+@; 		R3 = row code 2
+@; 		R4 = column code 2
+@;	Result:
+@;		R0 = 1 if can change codes, 0 otherwise 
 can_change_codes:
 	push {r1-r8, lr}
 		mov r8, #COLUMNS
@@ -144,7 +165,7 @@ can_change_codes:
 		mla r7, r1, r8, r2		@; r7 = offset code 1
 		ldrb r5, [r0, r7]		@; r5 = code 1
 		
-		mla r7, r1, r8, r2		@; r7 = offset code 2
+		mla r7, r3, r8, r4		@; r7 = offset code 2
 		ldrb r6, [r0, r7]		@; r6 = code 2
 
 		.Lif_can_change:
@@ -164,11 +185,14 @@ can_change_codes:
 
 	pop {r1-r8, pc}
 
-@; R0 = @matrix
-@; R1 = row code 1
-@; R2 = column code 1
-@; R3 = row code 2
-@; R4 = column code 2
+@; change_codes(*matrix, row_code1, col_code1, row_code2, col_code2):
+@;	Given the coordinates of two elements of the array, swap them
+@;	Params:
+@; 		R0 = @matrix
+@; 		R1 = row code1
+@; 		R2 = column code 1
+@; 		R3 = row code 2
+@; 		R4 = column code 2
 change_codes:
 	push {r0-r8, lr}
 		mov r7, #COLUMNS
@@ -184,10 +208,12 @@ change_codes:
 
 	pop {r0-r8, pc}
 
-@; Returns if the value it's an element or not
-@;	R0 = element
-
-@; r0 = 1 or 0
+@; is_element(element_code):
+@;	Given a code, return whether it is an element (1-6) or something else (7,15) - (0,8,16)
+@;	Params:
+@; 		R0 = element code
+@;	Result:
+@;		R0 = 1 if is element, 0 otherwise 
 	.global is_element
 is_element:
 	push {r1, lr}
@@ -207,8 +233,12 @@ is_element:
 		movne r0, #1			@; is_element = true
 	pop {r1, pc}
 
-@; R0 = element
-@; r0 = 1 or 0
+@; is_void_element(element_code):
+@;	Given a code, return if it is an empty space (0,8,16)
+@;	Params:
+@; 		R0 = element code
+@;	Result:
+@;		R0 = 1 if is element, 0 otherwise 
 	.global is_void_element
 is_void_element:
 	push {lr}
@@ -217,8 +247,12 @@ is_void_element:
 		movne r0, #0
 	pop {pc}
 	
-@; R0 = element
-@; r0 = 1 or 0
+@; is_solid_or_gap_element(element_code):
+@;	Given a code, return whether it is a gap or solid block (7, 15)
+@;	Params:
+@; 		R0 = element code
+@;	Result:
+@;		R0 = 1 if is element, 0 otherwise 
 	.global is_solid_or_gap_element
 is_solid_or_gap_element:
 	push {lr}
