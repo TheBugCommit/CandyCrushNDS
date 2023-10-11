@@ -45,7 +45,10 @@ void actualizar_contadores(int code)
 
 
 
-/* Programa principal: control general del juego */
+/* ---------------------------------------------------------------- */
+/* candy1_main.c : funci�n principal main() para test de tarea 1C 	*/
+/*					(requiere tener implementada la tarea 1E)		*/
+/* ---------------------------------------------------------------- */
 int main(void)
 {
 	int lapse = 0;				// contador de tiempo sin actividad del usuario
@@ -58,12 +61,9 @@ int main(void)
 	consoleDemoInit();			// inicializaci�n de pantalla de texto
 	printf("candyNDS (version 1: texto)\n");
 	printf("\x1b[38m\x1b[1;0H  nivel:");
-	printf("\x1b[39m\x1b[2;0H puntos:");
-	printf("\x1b[38m\x1b[1;15H movimientos:");
-	printf("\x1b[37m\x1b[2;15H   gelatinas:");
-	actualizar_contadores(15);
+	actualizar_contadores(1);
 
-	do							// bucle principal del juego
+	do							// bucle principal de pruebas
 	{
 		if (initializing)		//////	SECCI�N DE INICIALIZACI�N	//////
 		{
