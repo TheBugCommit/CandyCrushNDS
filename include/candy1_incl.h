@@ -64,6 +64,7 @@ extern int  hay_combinacion(char matriz[][COLUMNS]);					// 1G
 extern void sugiere_combinacion(char matriz[][COLUMNS], char sug[]);	// 1H
 
 	// candy1_utils.s //
-extern bool is_element(char element_code);
+extern char is_element(char element_code);
 extern bool is_void_element(char element_code);
 extern bool is_solid_or_gap_element(char element_code);
+extern char is_jelly(char element_code);
