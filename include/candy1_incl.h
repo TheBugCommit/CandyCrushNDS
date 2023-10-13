@@ -8,8 +8,8 @@
 
 // Rango de los n�meros de filas y de columnas:
 // m�nimo: 3, m�ximo: 11
-#define ROWS	9						// dimensiones de la matriz de juego
-#define COLUMNS	9
+#define ROWS	3						// dimensiones de la matriz de juego
+#define COLUMNS	3
 #define DFIL	(24-ROWS*2)				// desplazamiento vertical de filas
 
 #define MAXLEVEL	9					// nivel m�ximo (niveles 0..MAXLEVEL-1)
@@ -68,3 +68,4 @@ extern char is_element(char element_code);
 extern bool is_void_element(char element_code);
 extern bool is_solid_or_gap_element(char element_code);
 extern char is_jelly(char element_code);
+extern void get_row_columun(int offset, int* f, int* c);

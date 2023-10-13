@@ -70,7 +70,7 @@ inicializa_matriz:
 					b .Lend_if_varaible
 
 					.Lwhile_random:
-						mov r0, #5			@; (n - 1) valor aleatori
+						mov r0, #6			@; n valor aleatori
 						bl mod_random
 						add r0, r6      	@; + (0 o 8 o 16) a resultat per tenir gelatines diferents
 						add r0, #1			@; +1 a resultat per tenir rang 1 - 6
@@ -107,6 +107,8 @@ inicializa_matriz:
 		
 		pop {r1-r7, pc}			@;recuperar registros y volver
 
+
+
 @;TAREA 1B;
 @; recombina_elementos(*matriz): rutina para generar una nueva matriz de juego
 @;	mediante la reubicaci�n de los elementos de la matriz original, para crear
@@ -127,12 +129,131 @@ inicializa_matriz:
 @;		R0 = direcci�n base de la matriz de juego
 	.global recombina_elementos
 recombina_elementos:
-		push {lr}
+		push {r1-r10, lr}
 		
+		mov r1, r0					@; Copy @matrix to r1
+		mov r2, #ROWS
+		mov r3, #COLUMNS
+		mul r4, r2, r3				@; r4 = #ROWS * #COLUMNS
+
+		@; copy original matrix to mat_recomb1
+
+		ldr r2, =mat_recomb1		@; r1 = @mat_recomb1
+		ldr r6, =mat_recomb2		@; r6 = @mat_recomb2
+		mov r3, #0					@; r3 = offset
+		.Lfor_mat_combs:
+			ldrb r5, [r1, r3]		@;orig_matrix_elem = matrix[i][j]
+
+			mov r0, r5
+			bl is_element
+			strb r0, [r2, r3]		@; mat_recomb1[i][j] = value
+
+			.Lif_is_not_element:
+				cmp r0, #0
+				bne .Lelse_if_is_jelly
+				strb r5, [r6, r3] 		@; mat_recomb2[i][j] = value (0,8,16,7,15)
+				b .Lend_is_not_element_if
+			.Lelse_if_is_jelly:
+				mov r0, r5
+				bl is_jelly
+				cmp r0, #0
+				beq .Lelse_is_element
+				strb r0, [r6, r3] 		@; mat_recomb2[i][j] = value (8,16)
+				b .Lend_is_not_element_if
+			.Lelse_is_element:
+				mov r0, #0
+				strb r0, [r6, r3] 			@; mat_recomb2[i][j] = 0
+			.Lend_is_not_element_if:
+
+			add r3, #1				@; offset ++
+			cmp r3, r4
+			blo .Lfor_mat_combs 
+		.Lend_for_mat_combs:
+
+		mov r10, r1					@; r10 = @matrix
+		mov r5, r2					@; r5 = @mat_recomb1
+		mov r7, #0					@; offset = 0
+		.Lfor_orig_mat:
+			.Lif_is_element:
+				ldrb r0, [r10, r7]		@; r0 = matrix[i][j]	
+				bl is_element			@; if (!is_element) continue;
+				cmp r0, #0
+				beq .Lend_if_is_element
+
+				.Lwhile_sequence:
+					.Lwhile_mod_random:			 
+						mov r0, r4 				@; while(!is_element(mat_recomb1[random][random]))
+						bl mod_random
+						mov r8, r0				@; r8 = random
+
+						ldrb r3, [r5, r8]		@; r3 = mat_recomb1[random][random]
+
+						mov r0, r3
+						bl is_element			
+						cmp r0, #0
+						beq .Lwhile_mod_random
+					.Lend_while_mod_random:
+
+					ldrb r9, [r6, r7]			@; value = mat_recomb2[i][j]
+					add r3, r9
+					strb r3, [r6, r7]			@; mat_recomb2[i][j] = mat_recomb2[i][j] + mat_recomb1[random][random]
+
+					mov r0, r7					@; r0 = offset
+					sub sp, #8
+					mov r1, sp					@; @row
+					add r2, sp, #4				@; @column
+					bl get_row_columun
+					ldr r2, [r1, #4]			@; r2 = column
+					ldr r1, [r1]				@; r1 = row
+					add sp, #8
+
+					@; check if exists sequence
+					.Lif_exists_sequence:
+						cmp r2, #2 				@; if(j >= 2) 
+						movlo r0, #0
+						movhs r0, r6			@; r0 = @mat_recomb2
+						movhs r3, #WEST
+						blhs cuenta_repeticiones
+						cmp r0, #3				@; if(reps >= 3)
+						bhs .Lthen_exists_sequence
+
+						cmp r1, #2				@; if(i >= 2)
+						movlo r0, #0
+						movhs r0, r6			@; r0 = @mat_recomb2
+						movhs r3, #NORTH
+						blhs cuenta_repeticiones 
+						cmp r0, #3				@; if(reps >= 3)
+						blo .Lend_exists_sequence_if
+					.Lthen_exists_sequence:
+						strb r9, [r6, r7]		@; recover mat_recomb2 and repeat process
+						b .Lwhile_sequence
+					.Lend_exists_sequence_if:
+												@; TODO control infinite loop 
+				.Lend_while_sequence:
+
+				mov r0, #0						
+				strb r0, [r5, r8]				@; mat_recomb1[rand][rand] = 0
+			.Lend_if_is_element:
+
+			add r7, #1				@; offset++
+			cmp r7, r4
+			blo .Lfor_orig_mat
+		.Lend_for_orig_mat:
+
+		@; copy mat_recomb2 to @matrix
+		mov r1, #0					@; r1 = offset
+		.Lfor_copy_mat_comb2:
+			ldrb r2, [r6, r1]		@; value from mat_recomb2
+			strb r2, [r10, r1]
 		
-		pop {pc}
+			add r1, #1				@; offset ++
+			cmp r1, r4				@; while (offset < ROWS*COLUMNS)
+			blo .Lfor_copy_mat_comb2 
+		.Lend_for_copy_mat_comb2:
 
+		mov r0, r10					@; return @matrix
 
+		pop {r1-r10, pc}
 
 @;:::RUTINAS DE SOPORTE:::
 

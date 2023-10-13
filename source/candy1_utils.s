@@ -90,3 +90,27 @@ is_jelly:
 		.Lend_is_jelly_if:
 		
 	pop {r1, pc}
+
+@; get_row_columun(matrix_offset, @row, @column):
+@;	Given the offset of a matrix returns the row and column that the offset refers to 
+@;	Params:
+@; 		R0 = matrix offset
+@;		R1 = @row (reference)
+@;		R2 = @column (reference)
+	.global get_row_columun
+get_row_columun:
+	push {r0, r3, lr}
+
+		mov r3, #0					@; row = 0
+		.Lwhile_get_row_column:
+			cmp r0, #COLUMNS
+			blo .Lend_while_get_row_column
+
+			sub r0, #COLUMNS
+			add r3, #1				@; row ++
+			b .Lwhile_get_row_column
+		.Lend_while_get_row_column:
+		str r3, [r1]				@; row = r3
+		str r0, [r2]				@; column = r0
+
+	pop {r0, r3, pc}

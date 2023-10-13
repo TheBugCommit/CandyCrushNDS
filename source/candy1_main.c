@@ -57,7 +57,7 @@ int main(void)
 	printf("\x1b[38m\x1b[1;0H  nivel:");
 	actualizar_contadores(1);
 
-	do							// bucle principal de pruebas
+	/* do							// bucle principal de pruebas
 	{
 		inicializa_matriz(matrix, level);
 		escribe_matriz_debug(matrix);
@@ -74,6 +74,28 @@ int main(void)
 			level = (level + 1) % MAXLEVEL;
 			actualizar_contadores(1);
 		}
+	} while (1); */
+
+	// Test 1B
+		copia_mapa(matrix, level);
+	do							// bucle principal de pruebas
+	{
+		escribe_matriz_debug(matrix);
+		recombina_elementos(matrix);
+
+		retardo(5);
+		printf("\x1b[39m\x1b[3;8H (pulse A o B)");
+		do
+		{	swiWaitForVBlank();
+			scanKeys();					// esperar pulsaci�n tecla 'A' o 'B'
+		} while (!(keysHeld() & (KEY_A | KEY_B)));
+		printf("\x1b[3;8H              ");
+		
+		if (keysHeld() & KEY_A)			// si pulsa 'A',
+		{								// pasa a siguiente nivel
+			escribe_matriz_debug(matrix);
+		}
 	} while (1);
+
 	return(0);
 }
