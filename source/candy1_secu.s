@@ -56,6 +56,7 @@ hay_secuencia:
 					mov r0, r4
 					bl is_element
 					cmp r0, #0
+					movne r0, #0 
 					beq .Lend_solid_block_if
 
 					cmp r2, #COLUMNS - 2 	@; if(j < #COLUMNS - 2) 
