@@ -177,7 +177,7 @@ int main(void)
 				}
 				else
 				{
-					// recombina_elementos(matrix);
+					recombina_elementos(matrix);
 					escribe_matriz(matrix);
 					change = 1;					// forzar nueva verificaci�n
 				}								// de combinaciones

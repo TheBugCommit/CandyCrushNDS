@@ -16,10 +16,10 @@
 		.align 2
 @; matrices de recombinaci�n: matrices de soporte para generar una nueva matriz
 @;	de juego recombinando los elementos de la matriz original.
-	mat_recomb1:	.space ROWS*COLUMNS
-	mat_recomb2:	.space ROWS*COLUMNS
-
-
+	mat_recomb1:					.space ROWS*COLUMNS
+	mat_recomb2:					.space ROWS*COLUMNS
+	mat_recomb1_rand_pos:			.space ROWS*COLUMNS
+	mat_recomb1_rand_pos_offset:	.space 1
 
 @;-- .text. c�digo de las rutinas ---
 .text	
@@ -70,7 +70,7 @@ inicializa_matriz:
 					b .Lend_if_varaible
 
 					.Lwhile_random:
-						mov r0, #5			@; (n - 1) valor aleatori
+						mov r0, #6			@; n valor aleatori
 						bl mod_random
 						add r0, r6      	@; + (0 o 8 o 16) a resultat per tenir gelatines diferents
 						add r0, #1			@; +1 a resultat per tenir rang 1 - 6
@@ -107,6 +107,8 @@ inicializa_matriz:
 		
 		pop {r1-r7, pc}			@;recuperar registros y volver
 
+
+
 @;TAREA 1B;
 @; recombina_elementos(*matriz): rutina para generar una nueva matriz de juego
 @;	mediante la reubicaci�n de los elementos de la matriz original, para crear
@@ -127,16 +129,203 @@ inicializa_matriz:
 @;		R0 = direcci�n base de la matriz de juego
 	.global recombina_elementos
 recombina_elementos:
-		push {lr}
+		push {r1-r12, lr}
 		
-		
-		pop {pc}
+		mov r1, r0					@; Copy @matrix to r1
+		mov r2, #ROWS
+		mov r3, #COLUMNS
+		mul r4, r2, r3				@; r4 = #ROWS * #COLUMNS
+
+		.Lrestart_recomb:
+
+		@; copy original matrix to mat_recomb1
+		ldr r2, =mat_recomb1		@; r2 = @mat_recomb1
+		ldr r6, =mat_recomb2		@; r6 = @mat_recomb2
+		mov r3, #0					@; r3 = offset
+		mov r12, #0
+		.Lfor_mat_combs:
+			ldrb r5, [r1, r3]		@;orig_matrix_elem = matrix[i][j]
+
+			mov r0, r5
+			bl is_element
+			cmp r0, #0
+			addne r12, #1			@; elements_mat_comb1++ 
+			strb r0, [r2, r3]		@; mat_recomb1[i][j] = value
+
+			.Lif_is_not_element:
+				cmp r0, #0
+				bne .Lelse_if_is_jelly
+				strb r5, [r6, r3] 		@; mat_recomb2[i][j] = value (0,8,16,7,15)
+				b .Lend_is_not_element_if
+			.Lelse_if_is_jelly:
+				mov r0, r5
+				bl is_jelly
+				cmp r0, #0
+				beq .Lelse_is_element
+				strb r0, [r6, r3] 		@; mat_recomb2[i][j] = value (8,16)
+				b .Lend_is_not_element_if
+			.Lelse_is_element:
+				mov r0, #0
+				strb r0, [r6, r3] 			@; mat_recomb2[i][j] = 0
+			.Lend_is_not_element_if:
+
+			add r3, #1				@; offset ++
+			cmp r3, r4
+			blo .Lfor_mat_combs 
+		.Lend_for_mat_combs:
+
+		mov r10, r1					@; r10 = @matrix
+		mov r5, r2					@; r5 = @mat_recomb1
+
+		mov r7, #0					@; offset = 0
+		.Lfor_orig_mat:
+			.Lif_is_element:
+				ldrb r0, [r10, r7]		@; r0 = matrix[i][j]	
+				bl is_element			@; if (!is_element) continue;
+				cmp r0, #0
+				beq .Lend_if_is_element
+
+				@; inizialize mat_recomb1_rand_pos with 255 (no used position code)
+				ldr r11, =mat_recomb1_rand_pos_offset
+				mov r1, #0
+				strb r1, [r11]
+				ldr r11, =mat_recomb1_rand_pos
+				.Lfor_ini_mat_recomb1_rand_pos:
+					mov r2, #255
+					strb r2, [r11, r1]
+
+					add r1, #1
+					cmp r1, r4
+					blo .Lfor_ini_mat_recomb1_rand_pos	
+				.Lend_for_ini_mat_recomb1_rand_pos:
 
 
+				.Lwhile_sequence:
+					ldr r6, =mat_recomb1_rand_pos_offset
+					ldrb r3, [r6]
+
+					cmp	r3, r12					@; if(length(random_mat_comb1_pos) == elements_mat_comb1) restart_recomb
+					moveq r1, r10				@; restore @matrix to r1 
+					beq .Lrestart_recomb
+
+					.Lwhile_mod_random:			 
+						mov r0, r4 				@; while(!is_element(mat_recomb1[random][random]))
+						bl mod_random
+						mov r8, r0				@; r8 = random
+
+						ldrb r3, [r5, r8]		@; r3 = mat_recomb1[random][random]
+
+						mov r0, r3
+						bl is_element			
+						cmp r0, #0
+						beq .Lwhile_mod_random
+
+						mov r0, r11				@; r0 = @random_mat_comb1_pos
+						mov r1, r12				@; matrix_length = mat_recomb1_rand_pos_offset
+						mov r2, r8				@; r2 = rand_pos 
+						bl is_element_in_matrix
+						cmp r0, #1
+						beq .Lwhile_mod_random
+					.Lend_while_mod_random:
+
+					ldr r6, =mat_recomb2		@; r6 = @mat_recomb2
+					ldrb r9, [r6, r7]			@; value = mat_recomb2[i][j]
+					add r3, r9
+					strb r3, [r6, r7]			@; mat_recomb2[i][j] = mat_recomb2[i][j] + mat_recomb1[random][random]
+
+					mov r0, r7					@; r0 = offset
+					sub sp, #8
+					mov r1, sp					@; @row
+					add r2, sp, #4				@; @column
+					bl get_row_columun
+					ldr r3, [r1]				@; r3 = row			
+					ldr r2, [r1, #4]			@; r2 = column
+					mov r1, r3
+					add sp, #8					@; clear sp
+
+					@; check if exists sequence
+					.Lif_exists_sequence:
+						cmp r2, #1 				@; if(j > 1) 
+						movls r0, #0			@; r0 = 0
+						movhi r0, r6			@; r0 = @mat_recomb2
+						movhi r3, #WEST
+						blhi cuenta_repeticiones
+						cmp r0, #3				@; if(reps >= 3)
+						bhs .Lthen_exists_sequence
+
+						cmp r1, #1				@; if(i > 1)
+						movls r0, #0			@; r0 = 0
+						movhi r0, r6				@; r0 = @mat_recomb2
+						movhi r3, #NORTH
+						blhi cuenta_repeticiones 
+						cmp r0, #3				@; if(reps >= 3)
+						blo .Lend_exists_sequence_if
+					.Lthen_exists_sequence:
+						ldr r2, =mat_recomb1_rand_pos_offset
+						ldrb r3, [r2]
+
+						strb r8, [r11, r3]		@; random_mat_comb1_pos[x] = rand_pos
+						add r3, #1				@; increment offset random_mat_comb1_pos
+						strb r3, [r2]			@; save incremented offset
+
+						strb r9, [r6, r7]		@; recover mat_recomb2 and repeat process
+						b .Lwhile_sequence
+					.Lend_exists_sequence_if:
+				.Lend_while_sequence:
+
+				mov r0, #0						
+				strb r0, [r5, r8]				@; mat_recomb1[rand][rand] = 0
+				sub r12, #1						@; mat_recomb1_elements-- 
+			.Lend_if_is_element:
+
+			add r7, #1				@; offset++
+			cmp r7, r4
+			blo .Lfor_orig_mat
+		.Lend_for_orig_mat:
+
+		@; copy mat_recomb2 to @matrix
+		mov r1, #0					@; r1 = offset
+		.Lfor_copy_mat_comb2:
+			ldrb r2, [r6, r1]		@; value from mat_recomb2
+			strb r2, [r10, r1]
+		
+			add r1, #1				@; offset ++
+			cmp r1, r4				@; while (offset < ROWS*COLUMNS)
+			blo .Lfor_copy_mat_comb2 
+		.Lend_for_copy_mat_comb2:
+
+		mov r0, r10					@; return @matrix
+
+		pop {r1-r12, pc}
 
 @;:::RUTINAS DE SOPORTE:::
 
+@; is_element_in_matrix(matrix, element): check if the element is in the array of bytes
+@;	Params:
+@;		R0 = @matrix
+@;		R1 = matrix lenght
+@;		R2 = element
+@;	Resultado:
+@;		R0 = 1 | 0
+is_element_in_matrix:
+		push {r1-r4, lr}
 
+		mov r3, #0					@; offset = 0
+		.Lwhile_found_elem:
+			cmp r3, r1
+			movhs r0, #0
+			bhs .Lend_while_found_elem
+
+			ldrb r4, [r0, r3]
+			cmp r4, r2
+			moveq r0, #1
+			beq .Lend_while_found_elem
+
+			add r3, #1				@; offset++
+			b .Lwhile_found_elem
+		.Lend_while_found_elem:
+	
+		pop {r1-r4, pc}
 
 @; mod_random(n): rutina para obtener un n�mero aleatorio entre 0 y n-1,
 @;	utilizando la rutina 'random'
