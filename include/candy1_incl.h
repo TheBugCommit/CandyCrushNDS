@@ -8,11 +8,11 @@
 
 // Rango de los n�meros de filas y de columnas:
 // m�nimo: 3, m�ximo: 11
-#define ROWS	3						// dimensiones de la matriz de juego
-#define COLUMNS	3
+#define ROWS	9						// dimensiones de la matriz de juego
+#define COLUMNS	9
 #define DFIL	(24-ROWS*2)				// desplazamiento vertical de filas
 
-#define MAXLEVEL	9					// nivel m�ximo (niveles 0..MAXLEVEL-1)
+#define MAXLEVEL	10					// nivel m�ximo (niveles 0..MAXLEVEL-1)
 
 #define PUNT_SEC3	30					// puntos secuencia de 3 elementos
 #define PUNT_SEC4	60					// puntos secuencia de 4 elementos

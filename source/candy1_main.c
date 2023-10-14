@@ -57,45 +57,39 @@ int main(void)
 	printf("\x1b[38m\x1b[1;0H  nivel:");
 	actualizar_contadores(1);
 
-	/* do							// bucle principal de pruebas
-	{
-		inicializa_matriz(matrix, level);
-		escribe_matriz_debug(matrix);
-		retardo(5);
-		printf("\x1b[39m\x1b[3;8H (pulse A o B)");
-		do
-		{	swiWaitForVBlank();
-			scanKeys();					// esperar pulsaci�n tecla 'A' o 'B'
-		} while (!(keysHeld() & (KEY_A | KEY_B)));
-		printf("\x1b[3;8H              ");
-		
-		if (keysHeld() & KEY_A)			// si pulsa 'A',
-		{								// pasa a siguiente nivel
-			level = (level + 1) % MAXLEVEL;
-			actualizar_contadores(1);
-		}
-	} while (1); */
-
-	// Test 1B
-		copia_mapa(matrix, level);
+	// Test 1A and 1B
+	inicializa_matriz(matrix, level);
 	do							// bucle principal de pruebas
 	{
 		escribe_matriz_debug(matrix);
-		recombina_elementos(matrix);
+
+		if(hay_secuencia(matrix)){
+			printf("\x1b[39m\x1b[3;0H hay secuencia: SI");
+		} else {
+			printf("\x1b[39m\x1b[3;0H hay secuencia: NO");
+		}
 
 		retardo(5);
-		printf("\x1b[39m\x1b[3;8H (pulse A o B)");
+		printf("\x1b[38m\x1b[3;19H (pulse A/B)");
 		do
 		{	swiWaitForVBlank();
 			scanKeys();					// esperar pulsaci�n tecla 'A' o 'B'
 		} while (!(keysHeld() & (KEY_A | KEY_B)));
-		printf("\x1b[3;8H              ");
+		printf("\x1b[3;0H                               ");
+
 		
+		if (keysHeld() & KEY_B)			// si pulsa 'B',
+		{								// Recombina elementos
+			recombina_elementos(matrix);
+		}
+
 		if (keysHeld() & KEY_A)			// si pulsa 'A',
 		{								// pasa a siguiente nivel
-			escribe_matriz_debug(matrix);
+			level = (level + 1) % MAXLEVEL;
+			inicializa_matriz(matrix, level);
+			actualizar_contadores(1);
 		}
-	} while (1);
+	} while (1); 
 
 	return(0);
 }
