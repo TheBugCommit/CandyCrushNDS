@@ -114,3 +114,32 @@ get_row_columun:
 		str r0, [r2]				@; column = r0
 
 	pop {r0, r3, pc}
+
+@; move_offset_by_orientation(offset, orientation): 
+@;	given an offset, it increases or decreases it according to the orientation passed to it
+@;	Params:
+@; 		R0 = offset to increment
+@;	Result:
+@;		R0 = incremented offset 
+	.global move_offset_by_orientation
+move_offset_by_orientation:
+	push {lr}
+		
+		cmp r1, #EAST
+		addeq r0, #1
+		beq .Lend_increment
+
+		cmp r1, #SOUTH
+		addeq r0, #COLUMNS
+		beq .Lend_increment
+		
+		cmp r1, #WEST
+		subeq r0, #1
+		beq .Lend_increment
+
+		cmp r1, #NORTH
+		subeq r0, #COLUMNS
+
+		.Lend_increment:
+
+	pop {pc}

@@ -20,8 +20,9 @@
 
 /* variables globales */
 char matrix[ROWS][COLUMNS];		// matriz global de juego
+char mat_mar[ROWS][COLUMNS];
 int seed32;						// semilla de n�meros aleatorios
-int level = 0;					// nivel del juego (nivel inicial = 0)
+int level = 5;					// nivel del juego (nivel inicial = 0)
 int points;						// contador global de puntos
 int movements;					// n�mero de movimientos restantes
 int gelees;						// n�mero de gelatinas restantes
@@ -56,7 +57,7 @@ int main(void)
 	printf("\x1b[38m\x1b[1;0H  nivel:");
 	actualizar_contadores(1);
 
-	do							// bucle principal de pruebas
+	/* do							// bucle principal de pruebas
 	{
 		inicializa_matriz(matrix, level);		// sustituye a inicializa_matriz()
 		escribe_matriz_debug(matrix);
@@ -77,6 +78,33 @@ int main(void)
 			level = (level + 1) % MAXLEVEL;
 			actualizar_contadores(1);
 		}
+	} while (1); */
+
+	do							// bucle principal de pruebas
+	{
+		inicializa_matriz(matrix, level);		// sustituye a inicializa_matriz()
+		escribe_matriz_debug(matrix);
+		do
+		{	swiWaitForVBlank();
+			scanKeys();					// esperar pulsaci�n tecla 'A' o 'B'
+		} while (!(keysHeld() & (KEY_A | KEY_B)));
+		elimina_secuencias(matrix, mat_mar);
+		escribe_matriz_debug(mat_mar);
+
+		retardo(5);
+		printf("\x1b[38m\x1b[3;19H (pulse A/B)");
+		do
+		{	swiWaitForVBlank();
+			scanKeys();					// esperar pulsaci�n tecla 'A' o 'B'
+		} while (!(keysHeld() & (KEY_A | KEY_B)));
+		printf("\x1b[3;0H                               ");
+		retardo(5);
+		if (keysHeld() & KEY_A)			// si pulsa 'A',
+		{								// pasa a siguiente nivel
+			level = (level + 1) % MAXLEVEL;
+			actualizar_contadores(1);
+		}
 	} while (1);
+
 	return(0);
 }

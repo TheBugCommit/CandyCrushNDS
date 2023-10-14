@@ -69,3 +69,4 @@ extern bool is_void_element(char element_code);
 extern bool is_solid_or_gap_element(char element_code);
 extern char is_jelly(char element_code);
 extern void get_row_columun(int offset, int* f, int* c);
+extern char move_offset_by_orientation(char num, char orientation);

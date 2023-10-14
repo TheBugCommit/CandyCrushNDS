@@ -108,11 +108,31 @@ hay_secuencia:
 @;		R1 = direcci�n de la matriz de marcas
 	.global elimina_secuencias
 elimina_secuencias:
-		push {lr}
+		push {r6-r9, lr}
 		
-		
-		pop {pc}
+		mov r8, #0
+		ldr r6, =num_sec
+		strb r8, [r6]			@; num_sec = 0 
 
+		mov r6, #0
+	.Lelisec_for_ini_maks:
+		strb r6, [r1, r8]		@; set marks matrix to 0
+		add r8, #1
+		cmp r8, #ROWS*COLUMNS
+		blo .Lelisec_for_ini_maks
+		
+		bl marcar_horizontales
+		@; bl marcar_verticales
+
+		mov r9, #0
+		.Lfor_copy:
+			ldrb r8, [r1, r9]
+			strb r8, [r0, r9]
+			add r9, #1
+			cmp r9, #ROWS*COLUMNS
+			blo .Lfor_copy
+		
+		pop {r6-r9, pc}
 
 	
 @;:::RUTINAS DE SOPORTE:::
@@ -133,10 +153,50 @@ elimina_secuencias:
 @;		R0 = direcci�n base de la matriz de juego
 @;		R1 = direcci�n de la matriz de marcas
 marcar_horizontales:
-		push {lr}
+		push {r2-r6, lr}
 		
+		mov r4, r0				@; copy @ orig matrix
+		mov r5, r1				@; copy @ marks matrix
+
+		mov r6, #0				@; offset
+		.Lfor_mh_orig_matrix:
+			.Lif_is_elem_mh:
+				ldrb r0, [r4, r6]			@; r0 = orig_matrix[i][j]
+				bl is_element		
+				cmp r0, #0					@; if(!is_element(r0)) continue;
+				beq .Lend_if_is_elem_mh
+
+				mov r0, r6					@; r0 = offset
+				sub sp, #8
+				mov r1, sp					@; @row
+				add r2, sp, #4				@; @column
+				bl get_row_columun
+				ldr r2, [r1, #4]			@; r2 = column
+				ldr r1, [r1]				@; r1 = row			
+				add sp, #8					@; clear sp
+				
+				cmp r2, #COLUMNS - 2 	@; if(j < #COLUMNS - 2) 
+				movhs r0, #0			
+				movlo r0, r4			@; r0 = @orig_matrix
+				movlo r3, #EAST
+				bllo cuenta_repeticiones
+				cmp r0, #3				@; if(reps >= 3)
+				movhs r3, r0
+				movhs r0, r5			
+				movhs r1, r6
+				movhs r2, #EAST
+				blhs mark_sequence
+			.Lend_if_is_elem_mh:
+			
+			add r6, #1
+			cmp r6, #ROWS*COLUMNS
+			blo .Lfor_mh_orig_matrix
+		.Lend_for_mh_orig_matrix:
+
+		mov r0, r4				@; restore @ orig matrix
+		mov r1, r5				@; restore @ marks matrix
 		
-		pop {pc}
+		pop {r2-r6, pc}
 
 
 
@@ -164,5 +224,45 @@ marcar_verticales:
 		pop {pc}
 
 
+@; mark_sequence(*matrix, offset, orientation, sequence_length): 
+@;	Params:
+@;		R0 = @marks_matrix
+@;		R1 = offset
+@;		R2 = orientation (EAST, SOUTH, WEAST, NORTH)
+@;		R3 = sequence_length
+mark_sequence:
+		push {r0-r7, lr}
+
+		mov r4, r1								@; r4 = offset
+		mov r6, r0								@; r6 = @matrix 
+
+		@; get num_sec to mark
+		.Lif_no_exists_sequence:
+				ldrb r7, [r6, r4]				@; r7 = marks_matrix[i][j]
+				cmp r7, #0
+				bne .Lend_if_no_exists_sequence
+
+				ldr r5, =num_sec				@; num_sec++
+				ldrb r7, [r5]
+				add r7, #1
+				strb r7, [r5]
+		.Lend_if_no_exists_sequence:
+
+		.Lfor_mark_sequence:
+			cmp r3, #0
+			bls .Lend_for_mark_sequence
+
+			strb r7, [r6, r4]					@; set mark
+
+			mov r0, r4
+			mov r1, r2
+			bl move_offset_by_orientation
+			mov r4, r0
+
+			sub r3, #1							@; sequence_lenght--
+			b .Lfor_mark_sequence
+		.Lend_for_mark_sequence:
+		
+		pop {r0-r7, pc}
 
 .end
