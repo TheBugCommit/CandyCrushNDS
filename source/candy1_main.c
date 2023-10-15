@@ -22,7 +22,7 @@
 char matrix[ROWS][COLUMNS];		// matriz global de juego
 char mat_mar[ROWS][COLUMNS];
 int seed32;						// semilla de n�meros aleatorios
-int level = 5;					// nivel del juego (nivel inicial = 0)
+int level = 11;					// nivel del juego (nivel inicial = 0)
 int points;						// contador global de puntos
 int movements;					// n�mero de movimientos restantes
 int gelees;						// n�mero de gelatinas restantes
@@ -83,16 +83,19 @@ int main(void)
 	do							// bucle principal de pruebas
 	{
 		inicializa_matriz(matrix, level);		// sustituye a inicializa_matriz()
-		escribe_matriz_debug(matrix);
-		do
-		{	swiWaitForVBlank();
-			scanKeys();					// esperar pulsaci�n tecla 'A' o 'B'
-		} while (!(keysHeld() & (KEY_A | KEY_B)));
 		elimina_secuencias(matrix, mat_mar);
 		escribe_matriz_debug(mat_mar);
 
+		printf("\x1b[38m\x1b[3;8H (pulse A deleted sequences matrix)");
+		do
+		{	swiWaitForVBlank();
+			scanKeys();					// esperar pulsaci�n tecla 'A'
+		} while (!(keysHeld() & (KEY_A)));
+		printf("\x1b[3;0H                               ");
+		escribe_matriz_debug(matrix);
+
 		retardo(5);
-		printf("\x1b[38m\x1b[3;19H (pulse A/B)");
+		printf("\x1b[38m\x1b[3;8H (pulse A/B)");
 		do
 		{	swiWaitForVBlank();
 			scanKeys();					// esperar pulsaci�n tecla 'A' o 'B'

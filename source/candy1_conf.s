@@ -150,6 +150,28 @@
 		.byte 3,3,3,3,3,3,3,3,3
 		.byte 3,3,3,3,3,3,3,3,3
 
+	@; mapa 10: intersecion de sequencias en horizontal/vertical de elementos simples
+		.byte 1,1,1,15,2,2,2,2,7
+		.byte 3,3,3,3,3,15,7,7,5
+		.byte 4,3,4,4,4,4,15,7,5
+		.byte 1,3,4,2,6,3,7,0,5
+		.byte 2,2,2,2,5,5,5,5,5
+		.byte 6,5,2,2,5,6,6,6,15
+		.byte 15,7,2,6,6,7,7,7,7
+		.byte 7,7,7,15,7,7,7,15,15
+		.byte 15,15,7,15,15,15,7,15,15
+
+	@; mapa 11: intersecion de sequencias en horizontal/vertical de elementos mixtos
+		.byte 9,1,1,15,2,2,18,2,7
+		.byte 3,3,11,3,3,15,7,7,5
+		.byte 4,3,4,4,20,4,15,7,5
+		.byte 1,3,4,18,6,3,7,0,5
+		.byte 2,2,10,10,5,5,21,5,5
+		.byte 6,5,2,10,5,6,6,6,15
+		.byte 15,7,2,6,6,7,7,7,7
+		.byte 7,7,7,15,7,7,7,15,15
+		.byte 15,15,7,15,15,15,7,15,15
+
 	@; etc.
 
 
