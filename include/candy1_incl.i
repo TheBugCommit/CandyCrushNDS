@@ -5,7 +5,7 @@ ROWS = 9
 COLUMNS = 9
 
 
-@; Direccions
+@; Direccions 
 EAST = 0
 SOUTH = 1
 WEST = 2
