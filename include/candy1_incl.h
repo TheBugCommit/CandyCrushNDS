@@ -12,7 +12,7 @@
 #define COLUMNS	9
 #define DFIL	(24-ROWS*2)				// desplazamiento vertical de filas
 
-#define MAXLEVEL	10					// nivel m�ximo (niveles 0..MAXLEVEL-1)
+#define MAXLEVEL	12					// nivel m�ximo (niveles 0..MAXLEVEL-1)
 
 #define PUNT_SEC3	30					// puntos secuencia de 3 elementos
 #define PUNT_SEC4	60					// puntos secuencia de 4 elementos
@@ -69,3 +69,4 @@ extern bool is_void_element(char element_code);
 extern bool is_solid_or_gap_element(char element_code);
 extern char is_jelly(char element_code);
 extern void get_row_columun(int offset, int* f, int* c);
+extern char move_offset_by_orientation(char num, char orientation);

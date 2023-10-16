@@ -75,7 +75,7 @@ int main(void)
 			points = pun_obj[level];
 			if (hay_secuencia(matrix))			// si hay secuencias
 			{
-				//elimina_secuencias(matrix, mat_mar);	// eliminarlas
+				elimina_secuencias(matrix, mat_mar);	// eliminarlas
 				points += calcula_puntuaciones(mat_mar);
 				escribe_matriz(matrix);
 				falling = 1;							// iniciar bajada
@@ -111,7 +111,7 @@ int main(void)
 				escribe_matriz(matrix);	  // muestra el movimiento por pantalla
 				if (hay_secuencia(matrix))	// si el movimiento es posible
 				{
-					//elimina_secuencias(matrix, mat_mar);
+					elimina_secuencias(matrix, mat_mar);
 					borra_puntuaciones();
 					points += calcula_puntuaciones(mat_mar);
 					falling = 1;
