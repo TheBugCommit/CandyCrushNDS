@@ -193,6 +193,10 @@ marcar_horizontales:
 				cmp r0, #0					@; if(!is_element(r0)) continue;
 				beq .Lend_if_is_elem_mh
 
+				ldrb r0, [r5, r6]			@; r0 = marks_matrix[i][j]
+				cmp r0, #0					@; if position marked continue
+				bne .Lend_if_is_elem_mh
+
 				mov r0, r6					@; r0 = offset
 				sub sp, #8
 				mov r1, sp					@; @row
@@ -295,19 +299,40 @@ marcar_verticales:
 @;	Params:
 @;		R0 = @marks_matrix
 @;		R1 = offset
-@;		R2 = orientation (EAST, SOUTH, WEAST, NORTH)
+@;		R2 = orientation (EAST, SOUTH, WEAST)
 @;		R3 = sequence_length
 mark_sequence:
-		push {r4-r7, lr}
+		push {r4-r8, lr}
 
 		mov r4, r1								@; r4 = offset
 		mov r6, r0								@; r6 = @matrix 
 
 		@; get num_sec to mark
 		.Lif_no_exists_sequence:
-				ldrb r7, [r6, r4]				@; r7 = marks_matrix[i][j]
-				cmp r7, #0
-				bne .Lend_if_no_exists_sequence
+				.Lif_vertical:
+					cmp r2, #SOUTH
+					bne .Lend_if_vertical
+					
+					mov r5, #0					@; i = 0
+					mov r8, r4					@; r8 = offset
+					.Lwhile_search_intersection:
+						cmp r5, r3
+						bhs .Lend_while_search_intersection
+						
+						ldrb r7, [r6, r8]				@; r7 = marks_matrix[i][j]
+						cmp r7, #0
+						bne .Lend_if_no_exists_sequence
+
+						mov r0, r8
+						mov r1, r2
+						bl move_offset_by_orientation
+						mov r8, r0
+
+						add r5, #1
+						b .Lwhile_search_intersection
+					.Lend_while_search_intersection:
+				
+				.Lend_if_vertical:
 
 				ldr r5, =num_sec				@; num_sec++
 				ldrb r7, [r5]
@@ -332,6 +357,6 @@ mark_sequence:
 		
 		mov r0, r6								@; restore @matrix 
 
-		pop {r4-r7, pc}
+		pop {r4-r8, pc}
 
 .end
