@@ -152,8 +152,7 @@ baja_elementos:
 			cmp r0, #1						@; if(baja_verticales(r4)) return 1;
 			beq .Lend_if_vertical_down_shift
 		.Lelse_vertical_down_shift:
-			@;mov r4, r0
-			@;bl baja_laterales				
+			bl baja_laterales				
 		.Lend_if_vertical_down_shift:
 
 		pop {r4, pc}
@@ -175,40 +174,37 @@ baja_verticales:
 		push {r1-r3, r5-r7, lr}
 		
 		mov r7, #0								@; r7 = no movements
-		
-		mov r2, #COLUMNS - 1						@; j = COLUMNS - 1
-		.Lfor_vertical_down_shift_col:
-			mov r1, #ROWS - 1						@; i = ROWS - 1
-			.Lfor_vertical_down_shift_row:
-				mov r6, #COLUMNS
-				mla r6, r1,	r6, r2				@; r6 = offset 
-				ldrb r3, [r4, r6]				@; r4 = matrix[i][j]
+		mov r6, #ROWS*COLUMNS - 1				@; offset = ROWS*COLUMNS - 1
+		.Lfor_vertical_down_shift:
+			ldrb r3, [r4, r6]					@; r3 = matrix[i][j]
 
-				.Lif_void_position:
-					mov r0, r3
-					bl is_void_element
-					cmp r0, #0
-					beq .Lend_if_void_position
+			.Lif_void_position:
+				mov r0, r3
+				bl is_void_element
+				cmp r0, #0
+				beq .Lend_if_void_position
 
-					bl search_vertical_element
-					cmp r0, #255
-					beq .Lend_if_void_position
-					
-					mov r5, r0					@; r5 = offset 1
-					bl move_elements
-					mov r7, #1					@; r7 = have been movements				
-				.Lend_if_void_position:
+				bl search_vertical_element
+				cmp r0, #255
+				beq .Lend_if_void_position
 				
-				sub r1, #1						@; i--
-				cmp r1, #0						@; i > 0
-				bhi .Lfor_vertical_down_shift_row
-			.Lend_for_vertical_down_shift_row:
+				mov r5, r0					@; r5 = offset 1
+				bl move_elements
+				mov r7, #1					@; r7 = have been movements				
+			.Lend_if_void_position:
+				
+			sub r6, #1							@; offset--
+			cmp r6, #COLUMNS - 1				@; offset > COLUMNS - 1
+			bhi .Lfor_vertical_down_shift
+		.Lend_for_vertical_down_shift:
 
-			@; generates a random element on top, if it can be generated
+		mov r1, #SOUTH							@; orientation = SOUTH
+		mov r5, #0								@; offset = 0
+		.Lfor_first_row:
+			mov r2, #0							@; i = 0
+			mov r6, r5							@; save offset
 			.Lwhile_generete_rand_on_top:
-				mov r6, #COLUMNS
-				mla r6, r1,	r6, r2				@; r6 = offset 
-				ldrb r3, [r4, r6]				@; r4 = matrix[i][j]
+				ldrb r3, [r4, r6]				@; r3 = matrix[i][j]
 
 				.Lif_void_pos_gen_rand:
 					mov r0, r3
@@ -216,6 +212,7 @@ baja_verticales:
 					cmp r0, #0
 					beq .Lelse_if_is_gap
 
+					mov r7, #1					@; r7 = have been movement
 					mov r0, #6
 					bl mod_random
 					add r0, #1
@@ -230,15 +227,19 @@ baja_verticales:
 					b .Lend_while_generete_rand_on_top
 				.Lend_if_void_pos_gen_rand:
 
-				add r1, #1
-				cmp r1, #ROWS
+				mov r0, r6
+				bl move_offset_by_orientation	
+				mov r6, r0
+
+				add r2, #1						@; i++
+				cmp r2, #ROWS					@; i < ROWS
 				blo .Lwhile_generete_rand_on_top
 			.Lend_while_generete_rand_on_top:
 
-			cmp r2, #0						@; j >= 0
-			subhi r2, #1						@; j--
-			bne .Lfor_vertical_down_shift_col
-		.Lend_for_vertical_down_shift_col:
+			add r5, #1							@; offset ++ (change column) < COLUMNS
+			cmp r5, #COLUMNS
+			blo .Lfor_first_row
+		.Lend_for_first_row:
 
 		mov r0, r7							@; return if have been movements
 		
@@ -254,11 +255,36 @@ baja_verticales:
 @;	Resultado:
 @;		R0 = 1 indica que se ha realizado alg�n movimiento. 
 baja_laterales:
-		push {lr}
+		push {r1-r3, r5-r7, lr}
 		
-		mov r0, #0
+		mov r7, #0								@; r7 = no movements
+		mov r6, #ROWS*COLUMNS - 1				@; offset = ROWS*COLUMNS - 1
+		.Lfor_side_down_shift:
+			ldrb r3, [r4, r6]					@; r3 = matrix[i][j]
 
-		pop {pc}
+			.Lif_void_position_side:
+				mov r0, r3
+				bl is_void_element
+				cmp r0, #0
+				beq .Lend_if_void_position_side
+
+				bl search_side_element
+				cmp r0, #255
+				beq .Lend_if_void_position_side
+				
+				mov r5, r0					@; r5 = offset 1
+				bl move_elements
+				mov r7, #1					@; r7 = have been movements				
+			.Lend_if_void_position_side:
+				
+			sub r6, #1							@; offset--
+			cmp r6, #COLUMNS - 1				@; offset > COLUMNS - 1
+			bhi .Lfor_side_down_shift
+		.Lend_for_side_down_shift:
+
+		mov r0, r7							@; return if have been movements
+		
+		pop {r1-r3, r5-r7, pc}
 
 @; search_vertical_element(@matrix, offset): 
 @; looks to see if there are any elements in the column, skipping the
@@ -309,6 +335,103 @@ search_vertical_element:
 	.Loverflow_board:
 
 	pop {r1-r3, r6, pc}
+
+@; search_side_element(@matrix, offset): 
+@; It looks in the top-right and top-left corners, 
+@; if there are any elements that can be lowered, and returns its offset. 
+@; If both can get off, it will be random.
+@;	Params:
+@;		R4 = @matrix
+@;		R6 = offset
+@;	Resultado:
+@;		R0 = matrix offset if exists element on column, 255 otherwise 
+search_side_element:
+	push {r1-r3, r6, lr}
+
+	cmp r6, #COLUMNS - 1				@; if(row <= COLUMNS - 1)
+	movls r0, #255 
+	bls .Linvalid_offset
+
+	mov r0, r6
+	mov r1, #NORTH
+	bl move_offset_by_orientation	
+	mov r6, r0
+
+	mov r0, r6					@; r0 = offset
+	sub sp, #8
+	mov r1, sp					@; @row
+	add r2, sp, #4				@; @column
+	bl get_row_columun
+	ldr r2, [r1, #4]			@; r2 = column
+	add sp, #8					@; clear sp
+
+	mov r3, r6
+	cmp r2, #COLUMNS - 1		@;if(column == COLUMNS - 1)
+	subeq r3, r6, #1			
+	cmp r2, #0					@;if(column == 0)
+	addeq r3, r6, #1
+
+	.Lif_is_in_middle:
+		cmp r3, r6				@; if(r3 == r6)
+		bne .Lelse_is_not_in_middle
+		
+		add r1, r3, #1			@; r1 = offset upper - right
+		sub r3, #1				@; r3 = offset upper - left
+
+		.Lif_both_are_elements:
+			ldrb r6, [r4, r1]			
+			mov r0, r6
+			bl is_element
+			cmp r0, #0
+			beq .Lelse_if_left_is_element
+
+			ldrb r6, [r4, r3]
+			mov r0, r6
+			bl is_element
+			cmp r0, #0
+			beq .Lelse_if_right_is_element
+
+			.Lif_right_or_left:
+				mov r2, #2
+				bl mod_random
+				cmp r0, #1					@; if(mod_random() == 1) right_offset else left_offset
+				bne .Lelse_left
+				mov r0, r1
+				b .Lend_if_right_or_left
+			.Lelse_left:
+				mov r0, r3
+			.Lend_if_right_or_left:
+
+			b .Lend_if_both_are_elements
+		.Lelse_if_left_is_element:
+			ldrb r6, [r4, r3]
+			mov r0, r6
+			bl is_element
+			cmp r0, #0
+			movne r0, r3
+			beq .Lelse_no_elemnts
+			b .Lend_if_both_are_elements
+		.Lelse_if_right_is_element:
+			mov r0, r1
+			b .Lend_if_both_are_elements
+		.Lelse_no_elemnts:
+			mov r0, #255
+		.Lend_if_both_are_elements:
+
+		b .Lend_if_is_in_middle
+	.Lelse_is_not_in_middle:
+		ldrb r6, [r4, r3]	
+		mov r0, r6
+		bl is_element
+		cmp r0, #0	
+		moveq r0, #255
+		movne r0, r3			@; return offset	
+	.Lend_if_is_in_middle:
+
+	.Linvalid_offset:
+
+	pop {r1-r3, r6, pc}
+
 
 @; move_elements(@matrix, offset1, offset2): 
 @;  Action to move the element from position offset1 to offset2
