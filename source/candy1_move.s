@@ -144,10 +144,19 @@ cuenta_repeticiones:
 @;				queden movimientos pendientes. 
 	.global baja_elementos
 baja_elementos:
-		push {lr}
+		push {r4, lr}
 		
-		
-		pop {pc}
+		mov r4, r0							@; r4 =  @matrix
+		.Lif_vertical_down_shift:
+			bl baja_verticales
+			cmp r0, #1						@; if(baja_verticales(r4)) return 1;
+			beq .Lend_if_vertical_down_shift
+		.Lelse_vertical_down_shift:
+			@;mov r4, r0
+			@;bl baja_laterales				
+		.Lend_if_vertical_down_shift:
+
+		pop {r4, pc}
 
 
 
@@ -163,10 +172,77 @@ baja_elementos:
 @;	Resultado:
 @;		R0 = 1 indica que se ha realizado alg�n movimiento. 
 baja_verticales:
-		push {lr}
+		push {r1-r3, r5-r7, lr}
 		
+		mov r7, #0								@; r7 = no movements
 		
-		pop {pc}
+		mov r2, #COLUMNS - 1						@; j = COLUMNS - 1
+		.Lfor_vertical_down_shift_col:
+			mov r1, #ROWS - 1						@; i = ROWS - 1
+			.Lfor_vertical_down_shift_row:
+				mov r6, #COLUMNS
+				mla r6, r1,	r6, r2				@; r6 = offset 
+				ldrb r3, [r4, r6]				@; r4 = matrix[i][j]
+
+				.Lif_void_position:
+					mov r0, r3
+					bl is_void_element
+					cmp r0, #0
+					beq .Lend_if_void_position
+
+					bl search_vertical_element
+					cmp r0, #255
+					beq .Lend_if_void_position
+					
+					mov r5, r0					@; r5 = offset 1
+					bl move_elements
+					mov r7, #1					@; r7 = have been movements				
+				.Lend_if_void_position:
+				
+				sub r1, #1						@; i--
+				cmp r1, #0						@; i > 0
+				bhi .Lfor_vertical_down_shift_row
+			.Lend_for_vertical_down_shift_row:
+
+			@; generates a random element on top, if it can be generated
+			.Lwhile_generete_rand_on_top:
+				mov r6, #COLUMNS
+				mla r6, r1,	r6, r2				@; r6 = offset 
+				ldrb r3, [r4, r6]				@; r4 = matrix[i][j]
+
+				.Lif_void_pos_gen_rand:
+					mov r0, r3
+					bl is_void_element
+					cmp r0, #0
+					beq .Lelse_if_is_gap
+
+					mov r0, #6
+					bl mod_random
+					add r0, #1
+					strb r0, [r4, r6]
+					b .Lend_while_generete_rand_on_top
+				.Lelse_if_is_gap:
+					mov r0, r3
+					bl is_gap
+					cmp r0, #1
+					beq .Lend_if_void_pos_gen_rand
+				.Lelse_is_solid_or_element:
+					b .Lend_while_generete_rand_on_top
+				.Lend_if_void_pos_gen_rand:
+
+				add r1, #1
+				cmp r1, #ROWS
+				blo .Lwhile_generete_rand_on_top
+			.Lend_while_generete_rand_on_top:
+
+			cmp r2, #0						@; j >= 0
+			subhi r2, #1						@; j--
+			bne .Lfor_vertical_down_shift_col
+		.Lend_for_vertical_down_shift_col:
+
+		mov r0, r7							@; return if have been movements
+		
+		pop {r1-r3, r5-r7, pc}
 
 
 
@@ -180,9 +256,82 @@ baja_verticales:
 baja_laterales:
 		push {lr}
 		
-		
+		mov r0, #0
+
 		pop {pc}
 
+@; search_vertical_element(@matrix, offset): 
+@; looks to see if there are any elements in the column, skipping the
+@; possible upper holes (consecutive) until reaching a solid block,
+@; an empty position, or overflow the board from above
+@;	Params:
+@;		R4 = @matrix
+@;		R6 = offset
+@;	Resultado:
+@;		R0 = matrix offset if exists element on column, 255 otherwise 
+search_vertical_element: 
+	push {r1-r3, r6, lr}
 
+	mov r0, r6					@; r0 = offset
+	sub sp, #8
+	mov r1, sp					@; @row
+	add r2, sp, #4				@; @column
+	bl get_row_columun
+	ldr r2, [r1]				@; r2 = row					
+	add sp, #8					@; clear sp
+
+
+	.Lwhile_gap:
+		cmp r2, #0				@; if(row <= 0)
+		movls r0, #255			@; return 255
+		bls .Loverflow_board
+
+		mov r0, r6
+		mov r1, #NORTH
+		bl move_offset_by_orientation	
+		mov r6, r0
+
+		sub r2, #1				@; row--
+
+		ldrb r3, [r4, r6]		
+
+		mov r0, r3
+		bl is_gap			
+		cmp r0, #1
+		beq .Lwhile_gap
+
+	mov r0, r3
+	bl is_element
+	cmp r0, #0	
+	moveq r0, #255
+	movne r0, r6			@; return offset
+
+	.Loverflow_board:
+
+	pop {r1-r3, r6, pc}
+
+@; move_elements(@matrix, offset1, offset2): 
+@;  Action to move the element from position offset1 to offset2
+@;	Params:
+@;		R4 = @matrix
+@;		R5 = offset1
+@; 		R6 = offset2
+move_elements: 
+	push {r0-r1, lr}
+
+	ldrb r1, [r4, r5]			@; r1 = matrix[offset1]
+	
+	mov r0, r1
+	bl is_jelly
+	strb r0, [r4, r5]			@; store new matrix[offset1] code (0, 8, 16)
+
+	mov r0, r1
+	bl is_element				@; r0 = offset1 element code
+
+	ldrb r1, [r4, r6]			@; r1 = matrix[offset2]
+	add r1, r0					@; matrix[offset2] + offset1 element code
+	strb r1, [r4, r6]			@; store new code to matrix[offset2]
+
+	pop {r0-r1, pc}
 
 .end
