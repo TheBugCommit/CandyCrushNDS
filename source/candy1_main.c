@@ -1,17 +1,3 @@
-/*------------------------------------------------------------------------------
-
-	$ candy1_main.c $
-
-	Programa principal para la pr�ctica de Computadores: candy-crash para NDS
-	(2� curso de Grado de Ingenier�a Inform�tica - ETSE - URV)
-	
-	Analista-programador: santiago.romani@urv.cat
-	Programador 1: xxx.xxx@estudiants.urv.cat
-	Programador 2: yyy.yyy@estudiants.urv.cat
-	Programador 3: zzz.zzz@estudiants.urv.cat
-	Programador 4: uuu.uuu@estudiants.urv.cat
-
-------------------------------------------------------------------------------*/
 #include <nds.h>
 #include <stdio.h>
 #include <time.h>
@@ -22,7 +8,7 @@
 char matrix[ROWS][COLUMNS];		// matriz global de juego
 char mat_mar[ROWS][COLUMNS];
 int seed32;						// semilla de n�meros aleatorios
-int level = 0;					// nivel del juego (nivel inicial = 0)
+int level = 10;					// nivel del juego (nivel inicial = 0)
 int points;						// contador global de puntos
 int movements;					// n�mero de movimientos restantes
 int gelees;						// n�mero de gelatinas restantes
@@ -47,7 +33,7 @@ void actualizar_contadores(int code)
 
 
 /* ---------------------------------------------------------------- */
-/* candy1_main.c : funci�n principal main() para test de tarea 1C 	*/
+/* candy1_main.c : funci�n principal main() para test de tarea 1D 	*/
 /*					(requiere tener implementada la tarea 1E)		*/
 /* ---------------------------------------------------------------- */
 int main(void)
@@ -57,24 +43,41 @@ int main(void)
 	printf("\x1b[38m\x1b[1;0H  nivel:");
 	actualizar_contadores(1);
 
-	do							// bucle principal de pruebas
+	do							
 	{
-		inicializa_matriz(matrix, level);		// sustituye a inicializa_matriz()
+		inicializa_matriz(matrix, level);
 		escribe_matriz_debug(matrix);
-		if (hay_secuencia(matrix))			// si hay secuencias
-			printf("\x1b[39m\x1b[3;0H hay secuencia: SI");
-		else
-			printf("\x1b[39m\x1b[3;0H hay secuencia: NO");
+
 		retardo(5);
-		printf("\x1b[38m\x1b[3;19H (pulse A/B)");
+		printf("\x1b[38m\x1b[3;0H (pulse B see marks matrix)");
 		do
 		{	swiWaitForVBlank();
-			scanKeys();					// esperar pulsaci�n tecla 'A' o 'B'
-		} while (!(keysHeld() & (KEY_A | KEY_B)));
-		printf("\x1b[3;0H                               ");
+			scanKeys();					
+		} while (!(keysHeld() & (KEY_B)));
+		printf("\x1b[3;0H                                    ");
+
+		elimina_secuencias(matrix, mat_mar);
+		escribe_matriz_debug(mat_mar);
+
 		retardo(5);
-		if (keysHeld() & KEY_A)			// si pulsa 'A',
-		{								// pasa a siguiente nivel
+		printf("\x1b[38m\x1b[3;0H (pulse B see result matrix)");
+		do
+		{	swiWaitForVBlank();
+			scanKeys();					
+		} while (!(keysHeld() & (KEY_B)));
+		printf("\x1b[3;0H                                     ");
+		escribe_matriz_debug(matrix);
+
+		retardo(5);
+		printf("\x1b[38m\x1b[3;0H (pulse A(next level)/B(repeat))");
+		do
+		{	swiWaitForVBlank();
+			scanKeys();					
+		} while (!(keysHeld() & (KEY_A | KEY_B)));
+		printf("\x1b[3;0H                                         ");
+
+		if (keysHeld() & KEY_A)			
+		{								
 			level = (level + 1) % MAXLEVEL;
 			actualizar_contadores(1);
 		}
