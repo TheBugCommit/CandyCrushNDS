@@ -48,9 +48,7 @@ inicializa_matriz:
 		
 		mov r7, r0				@;copia @matriu
 		ldr r4, =mapas			@;obtenir mapa de configuració
-		mov r3, #ROWS
-		mov r5, #COLUMNS
-		mul r5, r3
+		mov r5, #ROWS*COLUMNS
 		mla r4, r1, r5, r4		@;r4 = @mapa_config
 
 		mov r1, #0				@; i = 0; (ROWS)
@@ -62,8 +60,9 @@ inicializa_matriz:
 				ldrb r6, [r4]		@; r6 = mapas[i][j]
 
 				.Lif_varaible:
-
-					tst r6,	#7	 		 	@; si espai buit, generar numbero aleatori
+					mov r0, r6				@; si espai buit, generar numbero aleatori
+					bl is_void_element
+					cmp r0, #1
 					beq .Lwhile_random
 
 					strb r6, [r7, r5] 		@; Copiar element mapa config a matriu
@@ -132,9 +131,7 @@ recombina_elementos:
 		push {r1-r12, lr}
 		
 		mov r1, r0					@; Copy @matrix to r1
-		mov r2, #ROWS
-		mov r3, #COLUMNS
-		mul r4, r2, r3				@; r4 = #ROWS * #COLUMNS
+		mov r4, #ROWS*COLUMNS		@; r4 = #ROWS * #COLUMNS
 
 		.Lrestart_recomb:
 

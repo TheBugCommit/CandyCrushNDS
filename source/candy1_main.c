@@ -73,18 +73,18 @@ int main(void)
 		printf("\x1b[38m\x1b[3;19H (pulse A/B)");
 		do
 		{	swiWaitForVBlank();
-			scanKeys();					// esperar pulsaci�n tecla 'A' o 'B'
+			scanKeys();					
 		} while (!(keysHeld() & (KEY_A | KEY_B)));
 		printf("\x1b[3;0H                               ");
 
 		
-		if (keysHeld() & KEY_B)			// si pulsa 'B',
-		{								// Recombina elementos
+		if (keysHeld() & KEY_B)			
+		{								
 			recombina_elementos(matrix);
 		}
 
-		if (keysHeld() & KEY_A)			// si pulsa 'A',
-		{								// pasa a siguiente nivel
+		if (keysHeld() & KEY_A)			
+		{								
 			level = (level + 1) % MAXLEVEL;
 			inicializa_matriz(matrix, level);
 			actualizar_contadores(1);
