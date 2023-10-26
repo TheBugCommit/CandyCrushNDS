@@ -65,7 +65,6 @@ int main(void)
 		if (initializing)		//////	SECCI�N DE INICIALIZACI�N	//////
 		{
 			inicializa_matriz(matrix, level);
-			//copia_mapa(matrix, 8);
 			escribe_matriz(matrix);
 			retardo(5);
 			initializing = 0;
@@ -85,7 +84,7 @@ int main(void)
 			gelees = contar_gelatinas(matrix);
 			actualizar_contadores(15);
 		}
-		/*else if (falling)		//////	SECCI�N BAJADA DE ELEMENTOS	//////
+		else if (falling)		//////	SECCI�N BAJADA DE ELEMENTOS	//////
 		{
 			falling = baja_elementos(matrix);	// realiza la siguiente bajada
 			retardo(4);
@@ -102,7 +101,7 @@ int main(void)
 				else change = 1;				// sino, revisar estado matriz
 			}
 			escribe_matriz(matrix);			// visualiza bajadas o eliminaciones
-		}*/
+		}
 		else					//////	SECCI�N DE JUGADAS	//////
 		{
 			if (procesar_touchscreen(matrix, &mX, &mY, &dX, &dY))
@@ -189,7 +188,7 @@ int main(void)
 		{
 			if (lapse == 192) 		// a los 8 segundos sin actividad (aprox.)
 			{
-				//sugiere_combinacion(matrix, pos_sug);
+				sugiere_combinacion(matrix, pos_sug);
 				borra_puntuaciones();
 			}
 			if ((lapse % 64) == 0)		// cada segundo (aprox.)
