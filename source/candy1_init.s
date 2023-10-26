@@ -18,8 +18,6 @@
 @;	de juego recombinando los elementos de la matriz original.
 	mat_recomb1:					.space ROWS*COLUMNS
 	mat_recomb2:					.space ROWS*COLUMNS
-	mat_recomb1_rand_pos:			.space ROWS*COLUMNS
-	mat_recomb1_rand_pos_offset:	.space 1
 
 @;-- .text. c�digo de las rutinas ---
 .text	
@@ -48,9 +46,7 @@ inicializa_matriz:
 		
 		mov r7, r0				@;copia @matriu
 		ldr r4, =mapas			@;obtenir mapa de configuració
-		mov r3, #ROWS
-		mov r5, #COLUMNS
-		mul r5, r3
+		mov r5, #ROWS*COLUMNS
 		mla r4, r1, r5, r4		@;r4 = @mapa_config
 
 		mov r1, #0				@; i = 0; (ROWS)
@@ -62,8 +58,9 @@ inicializa_matriz:
 				ldrb r6, [r4]		@; r6 = mapas[i][j]
 
 				.Lif_varaible:
-
-					tst r6,	#7	 		 	@; si espai buit, generar numbero aleatori
+					mov r0, r6				@; si espai buit, generar numbero aleatori
+					bl is_void_element
+					cmp r0, #1
 					beq .Lwhile_random
 
 					strb r6, [r7, r5] 		@; Copiar element mapa config a matriu
@@ -131,10 +128,10 @@ inicializa_matriz:
 recombina_elementos:
 		push {r1-r12, lr}
 		
-		mov r1, r0					@; Copy @matrix to r1
-		mov r2, #ROWS
-		mov r3, #COLUMNS
-		mul r4, r2, r3				@; r4 = #ROWS * #COLUMNS
+		mov r1, r0						@; Copy @matrix to r1
+
+		sub sp, #ROWS*COLUMNS + 3 		@; space to save matrecomb1_rand_pos + mat_recomb1_rand_pos_offset
+		mov r11, sp
 
 		.Lrestart_recomb:
 
@@ -162,7 +159,7 @@ recombina_elementos:
 				bl is_jelly
 				cmp r0, #0
 				beq .Lelse_is_element
-				strb r0, [r6, r3] 		@; mat_recomb2[i][j] = value (8,16)
+				strb r0, [r6, r3] 			@; mat_recomb2[i][j] = value (8,16)
 				b .Lend_is_not_element_if
 			.Lelse_is_element:
 				mov r0, #0
@@ -170,7 +167,7 @@ recombina_elementos:
 			.Lend_is_not_element_if:
 
 			add r3, #1				@; offset ++
-			cmp r3, r4
+			cmp r3, #ROWS*COLUMNS
 			blo .Lfor_mat_combs 
 		.Lend_for_mat_combs:
 
@@ -186,30 +183,28 @@ recombina_elementos:
 				beq .Lend_if_is_element
 
 				@; inizialize mat_recomb1_rand_pos with 255 (no used position code)
-				ldr r11, =mat_recomb1_rand_pos_offset
 				mov r1, #0
-				strb r1, [r11]
-				ldr r11, =mat_recomb1_rand_pos
+				strb r1, [r11, #ROWS*COLUMNS + 1]	@; mat_recomb1_rand_pos_offset = 0
+
 				.Lfor_ini_mat_recomb1_rand_pos:
 					mov r2, #255
 					strb r2, [r11, r1]
 
 					add r1, #1
-					cmp r1, r4
+					cmp r1, #ROWS*COLUMNS
 					blo .Lfor_ini_mat_recomb1_rand_pos	
 				.Lend_for_ini_mat_recomb1_rand_pos:
 
 
 				.Lwhile_sequence:
-					ldr r6, =mat_recomb1_rand_pos_offset
-					ldrb r3, [r6]
+					ldrb r3, [r11, #ROWS*COLUMNS + 1]
 
 					cmp	r3, r12					@; if(length(random_mat_comb1_pos) == elements_mat_comb1) restart_recomb
 					moveq r1, r10				@; restore @matrix to r1 
 					beq .Lrestart_recomb
 
 					.Lwhile_mod_random:			 
-						mov r0, r4 				@; while(!is_element(mat_recomb1[random][random]))
+						mov r0, #ROWS*COLUMNS   @; while(!is_element(mat_recomb1[random][random]))
 						bl mod_random
 						mov r8, r0				@; r8 = random
 
@@ -261,14 +256,13 @@ recombina_elementos:
 						cmp r0, #3				@; if(reps >= 3)
 						blo .Lend_exists_sequence_if
 					.Lthen_exists_sequence:
-						ldr r2, =mat_recomb1_rand_pos_offset
-						ldrb r3, [r2]
+						ldrb r3, [r11, #ROWS*COLUMNS + 1]	@; r3 = mat_recomb1_rand_pos_offset
 
-						strb r8, [r11, r3]		@; random_mat_comb1_pos[x] = rand_pos
-						add r3, #1				@; increment offset random_mat_comb1_pos
-						strb r3, [r2]			@; save incremented offset
+						strb r8, [r11, r3]					@; random_mat_comb1_pos[x] = rand_pos
+						add r3, #1							@; increment mat_recomb1_rand_pos_offset
+						strb r3, [r11, #ROWS*COLUMNS + 1]	@; save incremented offset
 
-						strb r9, [r6, r7]		@; recover mat_recomb2 and repeat process
+						strb r9, [r6, r7]					@; recover mat_recomb2 and repeat process
 						b .Lwhile_sequence
 					.Lend_exists_sequence_if:
 				.Lend_while_sequence:
@@ -279,9 +273,11 @@ recombina_elementos:
 			.Lend_if_is_element:
 
 			add r7, #1				@; offset++
-			cmp r7, r4
+			cmp r7, #ROWS*COLUMNS
 			blo .Lfor_orig_mat
 		.Lend_for_orig_mat:
+
+		add sp, #ROWS*COLUMNS + 3		@; free stack pointer space
 
 		@; copy mat_recomb2 to @matrix
 		mov r1, #0					@; r1 = offset
@@ -290,7 +286,7 @@ recombina_elementos:
 			strb r2, [r10, r1]
 		
 			add r1, #1				@; offset ++
-			cmp r1, r4				@; while (offset < ROWS*COLUMNS)
+			cmp r1, #ROWS*COLUMNS	@; while (offset < ROWS*COLUMNS)
 			blo .Lfor_copy_mat_comb2 
 		.Lend_for_copy_mat_comb2:
 
