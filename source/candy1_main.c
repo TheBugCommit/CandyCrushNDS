@@ -21,7 +21,7 @@
 /* variables globales */
 char matrix[ROWS][COLUMNS];		// matriz global de juego
 int seed32;						// semilla de n�meros aleatorios
-int level = 8;					// nivel del juego (nivel inicial = 0)
+int level = 9;					// nivel del juego (nivel inicial = 0)
 int points;						// contador global de puntos
 int movements;					// n�mero de movimientos restantes
 int gelees;						// n�mero de gelatinas restantes
@@ -56,13 +56,40 @@ int main(void)
 	printf("\x1b[38m\x1b[1;0H  nivel:");
 	actualizar_contadores(1);
 
-	do							// bucle principal de pruebas
+	/* do							// bucle principal de pruebas
 	{
 		inicializa_matriz(matrix, level);		// sustituye a inicializa_matriz()
 		escribe_matriz_debug(matrix);
 		if (hay_combinacion(matrix))			// si hay combinaciones
 			printf("\x1b[39m\x1b[3;0Hhay combinacion: SI");
 		else
+			printf("\x1b[39m\x1b[3;0Hhay combinacion: NO");
+		retardo(5);
+		printf("\x1b[38m\x1b[3;19H (pulse A/B)");
+		do
+		{	swiWaitForVBlank();
+			scanKeys();					// esperar pulsaci�n tecla 'A' o 'B'
+		} while (!(keysHeld() & (KEY_A | KEY_B)));
+		printf("\x1b[3;0H                               ");
+		retardo(5);
+		if (keysHeld() & KEY_A)			// si pulsa 'A',
+		{								// pasa a siguiente nivel
+			level = (level + 1) % MAXLEVEL;
+			actualizar_contadores(1);
+		}
+	} while (1); */
+
+	do							// bucle principal de pruebas
+	{
+		inicializa_matriz(matrix, level);		// sustituye a inicializa_matriz()
+		escribe_matriz_debug(matrix);
+		if (hay_combinacion(matrix)) {			// si hay combinaciones
+			printf("\x1b[39m\x1b[3;0Hhay combinacion: SI");
+			sugiere_combinacion(matrix, pos_sug);
+			oculta_elementos(matrix);
+			escribe_matriz_debug(matrix);
+
+		}else
 			printf("\x1b[39m\x1b[3;0Hhay combinacion: NO");
 		retardo(5);
 		printf("\x1b[38m\x1b[3;19H (pulse A/B)");
