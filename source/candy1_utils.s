@@ -1,5 +1,6 @@
 @;=                                                               		=
 @;=== candy1_utils.s: multiple global utilities                       ===
+@;=== Programador: gerard.casass@estudiants.urv.cat		  			  ===
 @;=                                                               		=
 
 
@@ -56,7 +57,7 @@ is_void_element:
 @;	Params:
 @; 		R0 = element code
 @;	Result:
-@;		R0 = 1 if is element, 0 otherwise 
+@;		R0 = 1 if is solid or gap, 0 otherwise 
 	.global is_solid_or_gap_element
 is_solid_or_gap_element:
 	push {lr}
@@ -66,6 +67,39 @@ is_solid_or_gap_element:
 		movne r0, #0	
 	pop {pc}
 
+@; is_solid(element_code):
+@;	Given a code, return whether it is a solid (7)
+@;	Params:
+@; 		R0 = element code
+@;	Result:
+@;		R0 = 1 if is solid, 0 otherwise 
+	.global is_solid
+is_solid:
+	push {lr}
+		teq r0, #15
+		moveq r0, #0
+		beq .Lis_not_solid
+
+		teq r0, #7 
+		moveq r0, #1
+		movne r0, #0
+		
+		.Lis_not_solid:
+	pop {pc}
+	
+@; is_gap(element_code):
+@;	Given a code, return whether it is a gap (15)
+@;	Params:
+@; 		R0 = element code
+@;	Result:
+@;		R0 = 1 if is gap, 0 otherwise 
+	.global is_gap
+is_gap:
+	push {lr}
+	teq r0, #15
+	moveq r0, #1
+	movne r0, #0
+	pop {pc}
 @; is_jelly(element_code):
 @;	given an element code returns jelly code, or 0 if isn't jelly
 @;	Params:
@@ -114,3 +148,33 @@ get_row_columun:
 		str r0, [r2]				@; column = r0
 
 	pop {r0, r3, pc}
+
+@; move_offset_by_orientation(offset, orientation): 
+@;	given an offset, it increases or decreases it according to the orientation passed to it
+@;	Params:
+@; 		R0 = offset to increment
+@; 		R1 = orientation
+@;	Result:
+@;		R0 = incremented offset 
+	.global move_offset_by_orientation
+move_offset_by_orientation:
+	push {lr}
+		
+		cmp r1, #EAST
+		addeq r0, #1
+		beq .Lend_increment
+
+		cmp r1, #SOUTH
+		addeq r0, #COLUMNS
+		beq .Lend_increment
+		
+		cmp r1, #WEST
+		subeq r0, #1
+		beq .Lend_increment
+
+		cmp r1, #NORTH
+		subeq r0, #COLUMNS
+
+		.Lend_increment:
+
+	pop {pc}

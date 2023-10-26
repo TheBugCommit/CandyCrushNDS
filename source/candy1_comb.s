@@ -1,8 +1,8 @@
 @;=                                                               		=
 @;=== candy1_combi.s: rutinas para detectar y sugerir combinaciones   ===
 @;=                                                               		=
-@;=== Programador tarea 1G: xxx.xxx@estudiants.urv.cat				  ===
-@;=== Programador tarea 1H: yyy.yyy@estudiants.urv.cat				  ===
+@;=== Programador tarea 1G: gerard.casass@estudiants.urv.cat		  ===
+@;=== Programador tarea 1H: gerard.casass@estudiants.urv.cat		  ===
 @;=                                                             	 	=
 
 
@@ -27,11 +27,16 @@
 @;		R0 = 1 si hay una secuencia, 0 en otro caso
 	.global hay_combinacion
 hay_combinacion:
-		push {r1-r8, lr}
+		push {r1-r8, r10-r12, lr}
 		
 		mov r7, r0						@; copy matrix 
 
 		mov r8, #0						@; conbination = false
+
+		sub sp, #4					@; space to stack poitnt
+		mov r10, sp					@; r10 = @inital_position_x
+		add r11, r10, #1			@; r11 = @inital_position_y
+		add r12, r10, #2			@; r12 = @inital_position_code
 
 		mov r1, #0						@; i = 0;
 		mov r5, #0						@; matrix offset
@@ -54,9 +59,9 @@ hay_combinacion:
 						mov r3, r1							@; r3 = i
 						add r4, r2, #1 						@; r4 = j + 1
 						bl detect_combination
-						cmp r0, #1
-						moveq r8, #1						@; conbination = true
-						beq .Lend_for_rows_hcomb
+						cmp r0, #6
+						movne r8, #1						@; conbination = true
+						bne .Lend_for_rows_hcomb
 					.Lend_no_last_column_if:
 
 					.Lif_no_last_row:
@@ -67,10 +72,11 @@ hay_combinacion:
 						add r3, r1, #1						@; r3 = i + 1
 						mov r4, r2 							@; r4 = j
 						bl detect_combination
-						cmp r0, #1
-						moveq r8, #1						@; conbination = true
-						beq .Lend_for_rows_hcomb
+						cmp r0, #6
+						movne r8, #1						@; conbination = true
+						bne .Lend_for_rows_hcomb
 					.Lend_no_last_row_if:
+					
 				.Lend_void_if:
 
 				add r2, #1				@; j++
@@ -85,10 +91,12 @@ hay_combinacion:
 			cmp r1, #ROWS				@; i < ROWS
 			blo .Lfor_rows_hcomb
 		.Lend_for_rows_hcomb:
+
+		add sp, #4						@; free space to stack poitnt
 		
 		mov r0, r8						@; return conbination
 
-		pop {r1-r8, pc}
+		pop {r1-r8, r10-r12, pc}
 
 
 @; detect_combination(*matrix, row_code1, col_code1, row_code2, col_code2):
@@ -100,14 +108,17 @@ hay_combinacion:
 @; 		R2 = column code 1
 @; 		R3 = row code 2
 @; 		R4 = column code 2
+@;		R10 = (ref) inital_position_x
+@;		R11 = (ref) inital_position_y
+@;		R12 = (ref) inital_position_code 
 @;	Result:
-@;		R0 = 1 if combination, 0 otherwise 
+@;		R0 = orientation_code, if combination exists 0-5, otherwise 6  
 detect_combination:
 	push {r1-r9, lr}
 		mov r5, r0								@; copy @matrix
-		mov r6, #0								@; combination = false
-
+		mov r6, #6								@; orientation_code = 6
 		mov r7, r4								@; copy column code 2
+
 		mov r8, r2								@; copy column code 1
 		mov r9, r1								@; copy row code 1
 
@@ -123,7 +134,7 @@ detect_combination:
 			mov r4, r5							@; copy @matrix
 			bl detectar_orientacion
 			cmp r0, #6
-			movne r6, #1						@; combination = true
+			movne r4, r7
 			bne .Lcomb_detected
 
 			mov r1, r3							@; r1 = row code 2
@@ -131,20 +142,28 @@ detect_combination:
 			mov r4, r5							@; copy @matrix
 			bl detectar_orientacion
 			cmp r0, #6
-			movne r6, #1						@; combination = true
-			bne .Lcomb_detected
+			movne r3, r9
+			movne r4, r8
+			moveq r1, r9
+			moveq r2, r8
+			moveq r4, r7
+			beq .Lend_comb_detected
 
 			.Lcomb_detected:
-			
+				strb r1, [r10]						@; initial_position_x = r0
+				strb r2, [r11]						@; initial_position_y = r0
+				mov r6, r0							@; orientation_code = r0
+	
+				bl get_initial_position_code
+				strb r0, [r12]						@; initial_position_code = r0
+			.Lend_comb_detected:
+
 			mov r0, r5
-			mov r1, r9					
-			mov r2, r8
-			mov r4, r7
 			bl change_codes
 
 		.Lend_can_change_codes_if:
 
-		mov r0, r6								@; return combination 
+		mov r0, r6								@; return orientation_code
 
 	pop {r1-r9, pc}
 
@@ -208,6 +227,28 @@ change_codes:
 
 	pop {r0-r8, pc}
 
+@; get_initial_position_code(*matrix, row1, column1, row2, column2):
+@;	Returns the initial position code of combination
+@;	Params:
+@; 		R1 = row1
+@; 		R2 = column1
+@; 		R3 = row2
+@; 		R4 = column2
+@; Result:
+@;		R0 = initial_pos_code (0-3)
+get_initial_position_code:
+	push {lr}
+
+	cmp r1, r3
+	movhi r0, #3			@; vertical down
+	movlo r0, #2			@; vertical up
+
+	cmp r2, r4
+	movhi r0, #1			@; hortiz left
+	movlo r0, #0			@; horitz right 
+
+	pop {pc}
+
 
 
 @;TAREA 1H;
@@ -229,10 +270,79 @@ change_codes:
 @;				guardar� las coordenadas (x1,y1,x2,y2,x3,y3), consecutivamente.
 	.global sugiere_combinacion
 sugiere_combinacion:
-		push {lr}
+		push {r0, r2-r7, r10-r12, lr}
 		
-		
-		pop {pc}
+		mov r5, r0
+		mov r7, r1
+
+		sub sp, #4					@; space to stack poitnt
+		mov r10, sp					@; r10 = @inital_position_x
+		add r11, r10, #1			@; r11 = @inital_position_y
+		add r12, r10, #2			@; r12 = @inital_position_code
+
+		mov r6, #ROWS*COLUMNS
+		bl mod_random
+		mov r6, r0				   @; r6 = rand_offset 
+
+		.Lwhile_no_combination:
+			cmp r6, #ROWS*COLUMNS
+			movhs r6, #0			@; if(rand_offset >= ROWS*COLUMNS) rand_offset = 0
+
+			ldrb r4, [r5, r6]		@; r4 = matrix[i][j]
+			.Lif_void_sc:
+				mov r0, r4
+				bl is_element
+				cmp r0, #0
+				beq .Lend_void_if_sc
+
+				mov r0, r6					@; r0 = offset
+				sub sp, #8
+				mov r1, sp					@; @row
+				add r2, sp, #4				@; @column
+				bl get_row_columun
+				ldr r2, [r1, #4]			@; r2 = column
+				ldr r1, [r1]				@; r1 = row			
+				add sp, #8					@; clear sp
+
+				.Lif_no_last_column_sc:
+					cmp r2, #COLUMNS - 1 				@; if (j < COLUMNS - 1)
+					bhs .Lend_no_last_column_if_sc
+
+					mov r0, r5							@; r0 = @matrix
+					mov r3, r1							@; r3 = i
+					add r4, r2, #1 						@; r4 = j + 1
+					bl detect_combination
+					cmp r0, #6
+					bne .Lend_while_no_combination		@; 
+				.Lend_no_last_column_if_sc:
+
+				.Lif_no_last_row_sc:
+					cmp r1, #ROWS - 1 					@; if (i < ROWS - 1)
+					bhs .Lend_no_last_row_if_sc
+
+					mov r0, r5							@; r0 = @matrix
+					add r3, r1, #1						@; r3 = i + 1
+					mov r4, r2 							@; r4 = j
+					bl detect_combination
+					cmp r0, #6
+					bne .Lend_while_no_combination
+				.Lend_no_last_row_if_sc:
+			.Lend_void_if_sc:
+
+			add r6, #1									@; rand_offset++
+			b .Lwhile_no_combination
+		.Lend_while_no_combination:
+
+		mov r3, r0										@; r3 = orientation_code
+		mov r0, r7										@; r0 = @pos_sug
+		ldrb r1, [r10]									@; r1 = inital_position_x
+		ldrb r2, [r11]									@; r2 = inital_position_y
+		ldrb r4, [r12]									@; r4 = inital_position_code
+		bl generar_posiciones							@; TODO falla generar posiciones
+
+		add sp, #4										@; free space to stack poitnt
+
+		pop {r0, r2-r7, r10-r12, pc}
 
 
 
@@ -261,10 +371,84 @@ sugiere_combinacion:
 @;	Resultado:
 @;		vector de posiciones (x1,y1,x2,y2,x3,y3), devuelto por referencia
 generar_posiciones:
-		push {lr}
+		push {r1-r9, lr}
 		
-		
-		pop {pc}
+		mov r9, r0				@; r9 = @vert_pos
+		mov r5, r1				@; r5 = ini row
+		mov r6, r2				@; r6 = ini column
+
+		cmp r4, #0
+		addeq r6, #1
+		cmp r4, #1
+		subeq r6, #1
+		cmp r4, #2
+		addeq r5, #1
+		cmp r4, #3
+		subeq r5, #1
+
+		strb r6, [r9]				@; pos_sug[0] = column
+		strb r5, [r9, #1]			@; pos_sug[1] = row
+		mov r5, #2					@; r5 = offset pos_sug
+
+		.Lif_orientation_lower4:
+			cmp r3, #3
+			bhi .Lelse_if_orientation_4
+
+			mov r6, #0						@; i = 0
+			.Lfor_store_last2_positions:
+				cmp r3, #EAST
+				addeq r2, #1
+				cmp r3, #SOUTH
+				addeq r1, #1
+				cmp r3, #WEST
+				subeq r2, #1
+				cmp r3, #NORTH
+				subeq r1, #1
+
+				strb r2, [r9, r5]			@; pos_sug[x] = column
+				add r5, #1
+				strb r1, [r9, r5]			@; pos_sug[x + 1] = row
+				add r5, #1
+
+				add r6, #1					@; i++	
+				cmp r6, #2					@; i < 2
+				blo .Lfor_store_last2_positions
+
+			b .Lend_if_orientation_lower4
+		.Lelse_if_orientation_4:
+			cmp r3, #4
+			bne .Lelse_orientation_5
+
+			add r2, #1					 
+			strb r2, [r9, r5]	
+			add r5, #1
+			strb r1, [r9, r5]
+			add r5, #1
+
+			sub r2, #2					 
+			strb r2, [r9, r5]	
+			add r5, #1
+			strb r1, [r9, r5]		
+
+			b .Lend_if_orientation_lower4
+		.Lelse_orientation_5:
+
+			strb r2, [r9, r5]	
+			add r5, #1
+			add r1, #1					 
+			strb r1, [r9, r5]
+			add r5, #1
+
+			strb r2, [r9, r5]	
+			add r5, #1
+			sub r1, #2					 
+			strb r1, [r9, r5]
+			
+		.Lend_if_orientation_lower4:
+
+		mov r0, r9						@; return @pos_sug
+
+		pop {r1-r9, pc}
 
 
 
