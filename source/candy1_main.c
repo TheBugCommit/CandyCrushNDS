@@ -22,7 +22,7 @@
 char matrix[ROWS][COLUMNS];		// matriz global de juego
 char mat_mar[ROWS][COLUMNS];
 int seed32;						// semilla de n�meros aleatorios
-int level = 10;					// nivel del juego (nivel inicial = 0)
+int level = 0;					// nivel del juego (nivel inicial = 0)
 int points;						// contador global de puntos
 int movements;					// n�mero de movimientos restantes
 int gelees;						// n�mero de gelatinas restantes
@@ -38,7 +38,7 @@ int gelees;						// n�mero de gelatinas restantes
 		bit 3:	gelatinas  */
 void actualizar_contadores(int code)
 {
-	if (code & 1) printf("\x1b[38m\x1b[1;8H %d", level);
+	if (code & 1) printf("\x1b[38m\x1b[1;8H %d  ", level);
 	if (code & 2) printf("\x1b[39m\x1b[2;8H %d  ", points);
 	if (code & 4) printf("\x1b[38m\x1b[1;28H %d ", movements);
 	if (code & 8) printf("\x1b[37m\x1b[2;28H %d ", gelees);
@@ -57,7 +57,7 @@ int main(void)
 	printf("\x1b[38m\x1b[1;0H  nivel:");
 	actualizar_contadores(1);
 
-	/* do							// bucle principal de pruebas
+	do							// bucle principal de pruebas
 	{
 		inicializa_matriz(matrix, level);		// sustituye a inicializa_matriz()
 		escribe_matriz_debug(matrix);
@@ -67,35 +67,6 @@ int main(void)
 			printf("\x1b[39m\x1b[3;0H hay secuencia: NO");
 		retardo(5);
 		printf("\x1b[38m\x1b[3;19H (pulse A/B)");
-		do
-		{	swiWaitForVBlank();
-			scanKeys();					// esperar pulsaci�n tecla 'A' o 'B'
-		} while (!(keysHeld() & (KEY_A | KEY_B)));
-		printf("\x1b[3;0H                               ");
-		retardo(5);
-		if (keysHeld() & KEY_A)			// si pulsa 'A',
-		{								// pasa a siguiente nivel
-			level = (level + 1) % MAXLEVEL;
-			actualizar_contadores(1);
-		}
-	} while (1); */
-
-	do							// bucle principal de pruebas
-	{
-		inicializa_matriz(matrix, level);		// sustituye a inicializa_matriz()
-		elimina_secuencias(matrix, mat_mar);
-		escribe_matriz_debug(mat_mar);
-
-		printf("\x1b[38m\x1b[3;8H (pulse A deleted sequences matrix)");
-		do
-		{	swiWaitForVBlank();
-			scanKeys();					// esperar pulsaci�n tecla 'A'
-		} while (!(keysHeld() & (KEY_A)));
-		printf("\x1b[3;0H                               ");
-		escribe_matriz_debug(matrix);
-
-		retardo(5);
-		printf("\x1b[38m\x1b[3;8H (pulse A/B)");
 		do
 		{	swiWaitForVBlank();
 			scanKeys();					// esperar pulsaci�n tecla 'A' o 'B'
