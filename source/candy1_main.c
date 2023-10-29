@@ -1,17 +1,3 @@
-/*------------------------------------------------------------------------------
-
-	$ candy1_main.c $
-
-	Programa principal para la pr�ctica de Computadores: candy-crash para NDS
-	(2� curso de Grado de Ingenier�a Inform�tica - ETSE - URV)
-	
-	Analista-programador: santiago.romani@urv.cat
-	Programador 1: xxx.xxx@estudiants.urv.cat
-	Programador 2: yyy.yyy@estudiants.urv.cat
-	Programador 3: zzz.zzz@estudiants.urv.cat
-	Programador 4: uuu.uuu@estudiants.urv.cat
-
-------------------------------------------------------------------------------*/
 #include <nds.h>
 #include <stdio.h>
 #include <time.h>
@@ -21,7 +7,7 @@
 /* variables globales */
 char matrix[ROWS][COLUMNS];		// matriz global de juego
 int seed32;						// semilla de n�meros aleatorios
-int level = 13;					// nivel del juego (nivel inicial = 0)
+int level = 0;					// nivel del juego (nivel inicial = 0)
 int points;						// contador global de puntos
 int movements;					// n�mero de movimientos restantes
 int gelees;						// n�mero de gelatinas restantes
@@ -55,37 +41,7 @@ short posY[] = {2, 2, 2, 2, 4, 4, 4, 0, 0, 0, 4, 3, 3, 5};
 short cori[] = {0, 1, 2, 3, 0, 1, 2, 0, 3, 0, 0, 1, 3, 0};
 short resp[] = {1, 2, 1, 1, 2, 1, 1, 3, 1, 3, 5, 2, 4, 2};
 
-int main(void) {
-	consoleDemoInit();			// inicializaci�n de pantalla de texto
-	printf("candyNDS (prueba tarea 1F)\n");
-	actualizar_contadores(1);
-
-	do {
-		copia_mapa(matrix, level);
-		escribe_matriz_debug(matrix);
-
-		retardo(5);
-		printf("\x1b[38m\x1b[5;19H (pulse A/B)");
-		do
-		{	swiWaitForVBlank();
-			scanKeys();					// esperar pulsaci�n tecla 'A' o 'B'
-		} while (!(keysHeld() & (KEY_A | KEY_B)));
-
-		baja_elementos(matrix);
-		escribe_matriz_debug(matrix);
-
-		retardo(5);
-		printf("\x1b[38m\x1b[5;19H (pulse A/B)");
-		do
-		{	swiWaitForVBlank();
-			scanKeys();					// esperar pulsaci�n tecla 'A' o 'B'
-		} while (!(keysHeld() & (KEY_A | KEY_B)));
-	} while (1);
-
-	return 0;
-}
-
-/* int main(void)
+int main(void)
 {
 	int ntest = 0;
 	int result;
@@ -133,4 +89,3 @@ int main(void) {
 	do { swiWaitForVBlank(); } while(1);	// bucle infinito
 	return(0);
 }
- */
