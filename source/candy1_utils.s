@@ -1,5 +1,6 @@
 @;=                                                               		=
 @;=== candy1_utils.s: multiple global utilities                       ===
+@;=== Programador: gerard.casass@estudiants.urv.cat		  			  ===
 @;=                                                               		=
 
 
