@@ -22,7 +22,7 @@
 char matrix[ROWS][COLUMNS];		// matriz global de juego
 char mat_mar[ROWS][COLUMNS];
 int seed32;						// semilla de n�meros aleatorios
-int level = 10;					// nivel del juego (nivel inicial = 0)
+int level = 0;					// nivel del juego (nivel inicial = 0)
 int points;						// contador global de puntos
 int movements;					// n�mero de movimientos restantes
 int gelees;						// n�mero de gelatinas restantes
@@ -47,7 +47,7 @@ void actualizar_contadores(int code)
 
 
 /* ---------------------------------------------------------------- */
-/* candy1_main.c : funci�n principal main() para test de tarea 1D 	*/
+/* candy1_main.c : funci�n principal main() para test de tarea 1C 	*/
 /*					(requiere tener implementada la tarea 1E)		*/
 /* ---------------------------------------------------------------- */
 int main(void)
@@ -57,41 +57,24 @@ int main(void)
 	printf("\x1b[38m\x1b[1;0H  nivel:");
 	actualizar_contadores(1);
 
-	do							
+	do							// bucle principal de pruebas
 	{
-		inicializa_matriz(matrix, level);
+		inicializa_matriz(matrix, level);		// sustituye a inicializa_matriz()
 		escribe_matriz_debug(matrix);
-
+		if (hay_secuencia(matrix))			// si hay secuencias
+			printf("\x1b[39m\x1b[3;0H hay secuencia: SI");
+		else
+			printf("\x1b[39m\x1b[3;0H hay secuencia: NO");
 		retardo(5);
-		printf("\x1b[38m\x1b[3;0H (pulse B see marks matrix)");
+		printf("\x1b[38m\x1b[3;19H (pulse A/B)");
 		do
 		{	swiWaitForVBlank();
-			scanKeys();					
-		} while (!(keysHeld() & (KEY_B)));
-		printf("\x1b[3;0H                                    ");
-
-		elimina_secuencias(matrix, mat_mar);
-		escribe_matriz_debug(mat_mar);
-
-		retardo(5);
-		printf("\x1b[38m\x1b[3;0H (pulse B see result matrix)");
-		do
-		{	swiWaitForVBlank();
-			scanKeys();					
-		} while (!(keysHeld() & (KEY_B)));
-		printf("\x1b[3;0H                                     ");
-		escribe_matriz_debug(matrix);
-
-		retardo(5);
-		printf("\x1b[38m\x1b[3;0H (pulse A(next level)/B(repeat))");
-		do
-		{	swiWaitForVBlank();
-			scanKeys();					
+			scanKeys();					// esperar pulsaci�n tecla 'A' o 'B'
 		} while (!(keysHeld() & (KEY_A | KEY_B)));
-		printf("\x1b[3;0H                                         ");
-
-		if (keysHeld() & KEY_A)			
-		{								
+		printf("\x1b[3;0H                               ");
+		retardo(5);
+		if (keysHeld() & KEY_A)			// si pulsa 'A',
+		{								// pasa a siguiente nivel
 			level = (level + 1) % MAXLEVEL;
 			actualizar_contadores(1);
 		}
