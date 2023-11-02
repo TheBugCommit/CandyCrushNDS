@@ -46,49 +46,38 @@ void actualizar_contadores(int code)
 
 
 /* ---------------------------------------------------------------- */
-/* candy1_main.c : funci�n principal main() para test de tarea 1H 	*/
+/* candy1_main.c : funci�n principal main() para test de tarea 1G 	*/
+/*					(requiere tener implementada la tarea 1E)		*/
 /* ---------------------------------------------------------------- */
 int main(void)
 {
-	consoleDemoInit();			
-	printf("candyNDS (prueba tarea 1H)\n");
+	consoleDemoInit();			// inicializaci�n de pantalla de texto
+	printf("candyNDS (prueba tarea 1G)\n");
 	printf("\x1b[38m\x1b[1;0H  nivel:");
 	actualizar_contadores(1);
 
-	do{
+	do							// bucle principal de pruebas
+	{
 		inicializa_matriz(matrix, level);		
 		escribe_matriz_debug(matrix);
-		if (hay_combinacion(matrix)) {		
+		if (hay_combinacion(matrix))			// si hay combinaciones
 			printf("\x1b[39m\x1b[3;0Hhay combinacion: SI");
-			sugiere_combinacion(matrix, pos_sug);
-			oculta_elementos(matrix);
-			escribe_matriz_debug(matrix);
-			printf("\x1b[38m\x1b[3;19H (pulse B show elements)");
-			do
-			{	swiWaitForVBlank();
-				scanKeys();					
-			} while (!(keysHeld() & (KEY_B)));
-			printf("\x1b[3;19H                                 ");			
-			muestra_elementos(matrix);
-			escribe_matriz_debug(matrix);
-		}else
+		else
 			printf("\x1b[39m\x1b[3;0Hhay combinacion: NO");
-	
 		retardo(5);
 		printf("\x1b[38m\x1b[3;19H (pulse A/B)");
 		do
 		{	swiWaitForVBlank();
-			scanKeys();					
+			scanKeys();					// esperar pulsaci�n tecla 'A' o 'B'
 		} while (!(keysHeld() & (KEY_A | KEY_B)));
-		printf("\x1b[3;0H                               ");
 		
+		printf("\x1b[3;0H                               ");
 		retardo(5);
-		if (keysHeld() & KEY_A)			
-		{								
+		if (keysHeld() & KEY_A)			// si pulsa 'A',
+		{								// pasa a siguiente nivel
 			level = (level + 1) % MAXLEVEL;
 			actualizar_contadores(1);
 		}
 	} while (1);
-
 	return(0);
 }
