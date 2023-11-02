@@ -313,7 +313,7 @@ sugiere_combinacion:
 					add r4, r2, #1 						@; r4 = j + 1
 					bl detect_combination
 					cmp r0, #6
-					bne .Lend_while_no_combination		@; 
+					bne .Lend_while_no_combination		
 				.Lend_no_last_column_if_sc:
 
 				.Lif_no_last_row_sc:
@@ -338,7 +338,7 @@ sugiere_combinacion:
 		ldrb r1, [r10]									@; r1 = inital_position_x
 		ldrb r2, [r11]									@; r2 = inital_position_y
 		ldrb r4, [r12]									@; r4 = inital_position_code
-		bl generar_posiciones							@; TODO falla generar posiciones
+		bl generar_posiciones							
 
 		add sp, #4										@; free space to stack poitnt
 
