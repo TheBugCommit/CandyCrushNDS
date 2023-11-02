@@ -1,3 +1,17 @@
+/*------------------------------------------------------------------------------
+
+	$ candy1_main.c $
+
+	Programa principal para la pr�ctica de Computadores: candy-crash para NDS
+	(2� curso de Grado de Ingenier�a Inform�tica - ETSE - URV)
+	
+	Analista-programador: santiago.romani@urv.cat
+	Programador 1: gerard.casass@estudiants.urv.cat
+	Programador 2: gerard.casass@estudiants.urv.cat
+	Programador 3: gerard.casass@estudiants.urv.cat
+	Programador 4: gerard.casass@estudiants.urv.cat
+
+------------------------------------------------------------------------------*/
 #include <nds.h>
 #include <stdio.h>
 #include <time.h>
