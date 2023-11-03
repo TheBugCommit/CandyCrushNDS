@@ -270,7 +270,7 @@ get_initial_position_code:
 @;				guardar� las coordenadas (x1,y1,x2,y2,x3,y3), consecutivamente.
 	.global sugiere_combinacion
 sugiere_combinacion:
-		push {r0, r2-r7, r10-r12, lr}
+		push {r0-r7, r10-r12, lr}
 		
 		mov r5, r0
 		mov r7, r1
@@ -342,7 +342,7 @@ sugiere_combinacion:
 
 		add sp, #4										@; free space to stack poitnt
 
-		pop {r0, r2-r7, r10-r12, pc}
+		pop {r0-r7, r10-r12, pc}
 
 
 
