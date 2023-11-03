@@ -216,6 +216,7 @@ baja_verticales:
 					mov r0, #6
 					bl mod_random
 					add r0, #1
+					add r0, r3					@; jelly_code + element_code
 					strb r0, [r4, r6]
 					b .Lend_while_generete_rand_on_top
 				.Lelse_if_is_gap:
