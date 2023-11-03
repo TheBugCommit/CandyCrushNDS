@@ -130,7 +130,7 @@ recombina_elementos:
 		
 		mov r1, r0						@; Copy @matrix to r1
 
-		sub sp, #ROWS*COLUMNS + 3 		@; space to save matrecomb1_rand_pos + mat_recomb1_rand_pos_offset
+		sub sp, #124 					@; space to save matrecomb1_rand_pos + mat_recomb1_rand_pos_offset
 		mov r11, sp
 
 		.Lrestart_recomb:
@@ -277,7 +277,7 @@ recombina_elementos:
 			blo .Lfor_orig_mat
 		.Lend_for_orig_mat:
 
-		add sp, #ROWS*COLUMNS + 3		@; free stack pointer space
+		add sp, #124				@; free stack pointer space
 
 		@; copy mat_recomb2 to @matrix
 		mov r1, #0					@; r1 = offset
