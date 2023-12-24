@@ -130,7 +130,9 @@ recombina_elementos:
 		
 		mov r1, r0						@; Copy @matrix to r1
 
-		sub sp, #124 					@; space to save matrecomb1_rand_pos + mat_recomb1_rand_pos_offset
+		mov r0, #ROWS*COLUMNS + 4
+		bic r0, #0x03
+		sub sp, r0 					@; space to save matrecomb1_rand_pos + mat_recomb1_rand_pos_offset
 		mov r11, sp
 
 		.Lrestart_recomb:
@@ -184,7 +186,7 @@ recombina_elementos:
 
 				@; inizialize mat_recomb1_rand_pos with 255 (no used position code)
 				mov r1, #0
-				strb r1, [r11, #ROWS*COLUMNS + 1]	@; mat_recomb1_rand_pos_offset = 0
+				strb r1, [r11, #ROWS*COLUMNS]	@; mat_recomb1_rand_pos_offset = 0
 
 				.Lfor_ini_mat_recomb1_rand_pos:
 					mov r2, #255
@@ -197,7 +199,7 @@ recombina_elementos:
 
 
 				.Lwhile_sequence:
-					ldrb r3, [r11, #ROWS*COLUMNS + 1]
+					ldrb r3, [r11, #ROWS*COLUMNS]
 
 					cmp	r3, r12					@; if(length(random_mat_comb1_pos) == elements_mat_comb1) restart_recomb
 					moveq r1, r10				@; restore @matrix to r1 
@@ -256,11 +258,11 @@ recombina_elementos:
 						cmp r0, #3				@; if(reps >= 3)
 						blo .Lend_exists_sequence_if
 					.Lthen_exists_sequence:
-						ldrb r3, [r11, #ROWS*COLUMNS + 1]	@; r3 = mat_recomb1_rand_pos_offset
+						ldrb r3, [r11, #ROWS*COLUMNS]	@; r3 = mat_recomb1_rand_pos_offset
 
 						strb r8, [r11, r3]					@; random_mat_comb1_pos[x] = rand_pos
 						add r3, #1							@; increment mat_recomb1_rand_pos_offset
-						strb r3, [r11, #ROWS*COLUMNS + 1]	@; save incremented offset
+						strb r3, [r11, #ROWS*COLUMNS]	@; save incremented offset
 
 						strb r9, [r6, r7]					@; recover mat_recomb2 and repeat process
 						b .Lwhile_sequence
@@ -277,7 +279,9 @@ recombina_elementos:
 			blo .Lfor_orig_mat
 		.Lend_for_orig_mat:
 
-		add sp, #124				@; free stack pointer space
+		mov r0, #ROWS*COLUMNS + 4
+		bic r0, #0x03
+		add sp, r0				@; free stack pointer space
 
 		@; copy mat_recomb2 to @matrix
 		mov r1, #0					@; r1 = offset
