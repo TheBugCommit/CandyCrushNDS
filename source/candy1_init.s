@@ -130,12 +130,21 @@ recombina_elementos:
 		
 		mov r1, r0						@; Copy @matrix to r1
 
-		mov r0, #ROWS*COLUMNS + 4
+		mov r0, #ROWS*COLUMNS*2 + 4
 		bic r0, #0x03
-		sub sp, r0 					@; space to save matrecomb1_rand_pos + mat_recomb1_rand_pos_offset
+		sub sp, r0 					@; space to save matrecomb1_rand_pos (0) + mat_recomb1_rand_pos_offset (ROWS*COLUMNS) + matgraphics_supp ((ROWS*COLUMNS)+1)
 		mov r11, sp
 
 		.Lrestart_recomb:
+
+		mov r2, #ROWS*COLUMNS + 1	@; matgraphics_supp offset
+		mov r3, #-1
+		@; init matgraphics_supp
+		.Lfor_init_matgraphics_supp:
+			strb r3, [r11, r2]
+			add r2, #1
+			cmp r2, #ROWS*COLUMNS*2 + 1
+			blo .Lfor_init_matgraphics_supp
 
 		@; copy original matrix to mat_recomb1
 		ldr r2, =mat_recomb1		@; r2 = @mat_recomb1
@@ -230,6 +239,10 @@ recombina_elementos:
 					add r3, r9
 					strb r3, [r6, r7]			@; mat_recomb2[i][j] = mat_recomb2[i][j] + mat_recomb1[random][random]
 
+					mov r0, #ROWS*COLUMNS+1		
+					add r0, r7					
+					strb r8, [r11, r0]			@; matgraphics_supp[mat_recomb2_offset] = mat_recomb1_offset
+
 					mov r0, r7					@; r0 = offset
 					sub sp, #8
 					mov r1, sp					@; @row
@@ -262,7 +275,7 @@ recombina_elementos:
 
 						strb r8, [r11, r3]					@; random_mat_comb1_pos[x] = rand_pos
 						add r3, #1							@; increment mat_recomb1_rand_pos_offset
-						strb r3, [r11, #ROWS*COLUMNS]	@; save incremented offset
+						strb r3, [r11, #ROWS*COLUMNS]		@; save incremented offset
 
 						strb r9, [r6, r7]					@; recover mat_recomb2 and repeat process
 						b .Lwhile_sequence
@@ -279,10 +292,6 @@ recombina_elementos:
 			blo .Lfor_orig_mat
 		.Lend_for_orig_mat:
 
-		mov r0, #ROWS*COLUMNS + 4
-		bic r0, #0x03
-		add sp, r0				@; free stack pointer space
-
 		@; copy mat_recomb2 to @matrix
 		mov r1, #0					@; r1 = offset
 		.Lfor_copy_mat_comb2:
@@ -293,6 +302,46 @@ recombina_elementos:
 			cmp r1, #ROWS*COLUMNS	@; while (offset < ROWS*COLUMNS)
 			blo .Lfor_copy_mat_comb2 
 		.Lend_for_copy_mat_comb2:
+
+		@; activate animations
+		mov r5, #ROWS*COLUMNS + 1   @; matgraphics_supp offset
+		mov r4, #0
+ 		.Lfor_activate_animations:
+			ldsb r8, [r11, r5]
+
+			cmp r8, #0					@; if(matgraphics_supp[offset] >= 0)
+			blt .Lnext_elem_activ_anim
+
+			sub sp, #8
+
+			mov r0, r4
+			mov r1, sp					@; @row
+			add r2, sp, #4				@; @column
+			bl get_row_columun
+			ldr r6, [r1]				@; r6 = dest row			
+			ldr r3, [r1, #4]			@; r3 = dest column
+
+			mov r0, r8
+			bl get_row_columun
+			ldr r0, [r1]				@; r0 = orig row						
+			ldr r1, [r1, #4]			@; r1 = orig column
+			mov r2, r6					@; r2 = dest row
+
+			add sp, #8					@; clear sp
+			
+			bl activa_elemento
+
+			.Lnext_elem_activ_anim:
+
+			add r5, #1
+			add r4, #1
+			cmp r4, #ROWS*COLUMNS
+			blo .Lfor_activate_animations
+
+		
+		mov r0, #ROWS*COLUMNS*2 + 4
+		bic r0, #0x03
+		add sp, r0					@; free stack pointer space
 
 		mov r0, r10					@; return @matrix
 

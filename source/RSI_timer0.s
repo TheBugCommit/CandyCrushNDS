@@ -13,10 +13,10 @@
 .data
 		.align 2
 		.global update_spr
-	update_spr:	.hword	0			@;1 -> actualizar sprites
+	update_spr:	.hword	0			@; 1 -> actualizar sprites
 		.global timer0_on
-	timer0_on:	.hword	0 			@;1 -> timer0 en marcha, 0 -> apagado
-	divFreq0: .hword	0			@;divisor de frecuencia inicial para timer 0
+	timer0_on:	.hword	0 			@; 1 -> timer0 en marcha, 0 -> apagado
+	divFreq0:   .hword	-16364		@; divisor de frecuencia inicial para timer 0 (F/64)/1000Hz = 523 (cada 1ms)
 
 
 @;-- .bss. variables (globales) no inicializadas ---
@@ -37,8 +37,23 @@
 @;Tarea 2H: actualiza el desplazamiento del fondo 3
 	.global rsi_vblank
 rsi_vblank:
-		push {lr}
+		push {r0-r3, lr}
 		
+		ldr r3, =update_spr
+		ldrh r2, [r3]
+
+		cmp r2, #0
+		beq .Lno_spr_update
+		
+		ldr r0, =OAM
+		ldr r1, =n_sprites
+		ldr r1, [r1]
+		bl SPR_actualizarSprites
+
+		mov r2, #0			@; update_spr = 0
+		strh r2, [r3]
+
+		.Lno_spr_update:
 @;Tareas 2Ea
 
 
@@ -47,8 +62,7 @@ rsi_vblank:
 
 @;Tarea 2Ha
 
-		
-		pop {pc}
+		pop {r0-r3, pc}
 
 
 
@@ -60,20 +74,47 @@ rsi_vblank:
 @;		R0 = init; si 1, restablecer divisor de frecuencia original divFreq0
 	.global activa_timer0
 activa_timer0:
-		push {lr}
+		push {r0-r1, lr}
 		
-		
-		pop {pc}
+		cmp r0, #0
+		beq .Lend_activa_timer0
+
+		ldr r0, =divFreq0
+		ldsh r0, [r0]
+
+		ldr r1, =divF0
+		strh r0, [r1]		@; divF0 = divFreq0
+
+		ldr r1, =TIMER0_DATA
+		mov r0, r0, lsl #16
+        mov r0, r0, lsr #16
+        orr r0, #0xC10000
+		str r0, [r1]		@; TIMER0_DATA = divFreq0
+							@; TIMER0_CR = F/64 | irq enabled | start
+
+		ldr r1, =timer0_on
+		mov r0, #1
+		strh r0, [r1]
+
+		.Lend_activa_timer0:
+
+		pop {r0-r1, pc}
 
 
 @;TAREA 2Ec;
 @;desactiva_timer0(); rutina para desactivar el timer 0.
 	.global desactiva_timer0
 desactiva_timer0:
-		push {lr}
+		push {r0-r1, lr}
+
+		ldr r0, =TIMER0_DATA
+		mov r1, #0
+		str r1, [r0]		@; disable timer
+
+		ldr r0, =timer0_on
+		strh r1, [r0]		@; timer0_on = 0
 		
-		
-		pop {pc}
+		pop {r0-r1, pc}
 
 
 
@@ -88,11 +129,103 @@ desactiva_timer0:
 @;  el efecto de aceleraci�n (con un l�mite).
 	.global rsi_timer0
 rsi_timer0:
-		push {lr}
+		push {r0-r4, lr}
 		
-		
-		pop {pc}
+		ldr r3, =n_sprites
+		ldr r3, [r3]				@; r3 = n_sprites
 
+		ldr r2, =vect_elem			@; r2 = @vect_elem
+
+		mov r4, #0					@; element_moved = false
+
+		mov r1, #0					@; i = 0
+		.Lfor_sprites:
+			cmp r1, r3				@; for(i < n_sprites)
+			bhs .Lend_for_sprites
+
+			mov r0, r2		 
+			bl update_elment  		@; update_element(@vect_elem[i], i)
+			
+			@; element_moved = !element_moved && update_element(@vect_elem[i], i)
+			.Lif_elem_moved:
+				cmp r4, #0		
+				bne .Lend_if_elem_moved
+
+				cmp r0, #0
+				beq .Lend_if_elem_moved
+
+				mov r4, r0
+			.Lend_if_elem_moved:
+
+			add r2, #ELE_TAM		@; @vect_elem += ELE_TAM;
+			add r1, #1				@; i++
+			b .Lfor_sprites
+		.Lend_for_sprites:
+
+		cmp r4, #0				
+		beq .Lelement_not_moved   	@; if(element_moved) 
+
+		ldr r1, =update_spr
+		mov r0, #1
+		strh r0, [r1]				@; update_spr = 1
+
+		ldr r1, =TIMER0_DATA
+		ldsh r0, [r1]
+		subs r0, #5					@; decrement TIMER_FREQ => divFreq0 * 0.01 (1%)
+		strh r0, [r1]
+
+		b .Lend_rsi_timer0
+		.Lelement_not_moved:
+			bl desactiva_timer0
+		.Lend_rsi_timer0:
+		
+		pop {r0-r4, pc}
+
+@; update_element(vect_elem[i])
+@;	Updates an element position if is it's active, and decrements ii var
+@;	Params:
+@; 		R0 = @vect_elem[i] (offset)
+@;		R1 = vect_elem index (i)
+@;  Result:
+@; 		R0 = 1 (if element moved), 0 otherwise
+update_elment:
+	push {r1-r6, lr}
+		mov r3, #0					@; element_moved = false 
+
+		ldsh r2, [r0]				@; r4 = vect_elem[i].ii
+		cmp r2, #0					@; if(vect_elem[i].ii > 0)	
+		ble .Lignore_inactive_elem
+
+		mov r3, #1					@; element_moved = true
+
+		sub r2, #1
+		strh r2, [r0]				@; vect_elem[i].ii--;
+
+		ldsh r2, [r0, #ELE_PX]		@; r3 = vect_elem[i].px
+		ldsh r4, [r0, #ELE_PY]		@; r4 = vect_elem[i].py
+		ldsh r5, [r0, #ELE_VX]		@; r5 = vect_elem[i].vx
+		ldsh r6, [r0, #ELE_VY]		@; r6 = vect_elem[i].vy
+
+		adds r2, r5
+		adds r4, r6
+
+		strh r2, [r0, #ELE_PX]		
+		strh r4, [r0, #ELE_PY]
+
+		mov r0, r1
+		mov r1, r2
+		mov r2, r4
+		bl SPR_moverSprite
+
+		ldr r0, =OAM
+		ldr r1, =n_sprites
+		ldr r1, [r1]
+		bl SPR_actualizarSprites
+
+		.Lignore_inactive_elem:
+
+		mov r0, r3					@; return element_moved
+	pop {r1-r6, pc}
 
 
 .end
