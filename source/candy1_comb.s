@@ -270,7 +270,7 @@ get_initial_position_code:
 @;				guardar� las coordenadas (x1,y1,x2,y2,x3,y3), consecutivamente.
 	.global sugiere_combinacion
 sugiere_combinacion:
-		push {r0, r2-r7, r10-r12, lr}
+		push {r0-r7, r10-r12, lr}
 		
 		mov r5, r0
 		mov r7, r1
@@ -280,7 +280,7 @@ sugiere_combinacion:
 		add r11, r10, #1			@; r11 = @inital_position_y
 		add r12, r10, #2			@; r12 = @inital_position_code
 
-		mov r6, #ROWS*COLUMNS
+		mov r0, #ROWS*COLUMNS
 		bl mod_random
 		mov r6, r0				   @; r6 = rand_offset 
 
@@ -313,7 +313,7 @@ sugiere_combinacion:
 					add r4, r2, #1 						@; r4 = j + 1
 					bl detect_combination
 					cmp r0, #6
-					bne .Lend_while_no_combination		@; 
+					bne .Lend_while_no_combination		
 				.Lend_no_last_column_if_sc:
 
 				.Lif_no_last_row_sc:
@@ -338,11 +338,11 @@ sugiere_combinacion:
 		ldrb r1, [r10]									@; r1 = inital_position_x
 		ldrb r2, [r11]									@; r2 = inital_position_y
 		ldrb r4, [r12]									@; r4 = inital_position_code
-		bl generar_posiciones							@; TODO falla generar posiciones
+		bl generar_posiciones							
 
 		add sp, #4										@; free space to stack poitnt
 
-		pop {r0, r2-r7, r10-r12, pc}
+		pop {r0-r7, r10-r12, pc}
 
 
 
