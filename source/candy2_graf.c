@@ -32,7 +32,23 @@ gelatina mat_gel[ROWS][COLUMNS];	// matriz de gelatinas
 void genera_sprites(char mat[][COLUMNS])
 {
 
+	SPR_ocultarSprites(128);
 
+	for(int i = 0; i < ROWS*COLUMNS; i++) {
+		vect_elem[i].ii = -1;
+	}
+
+	char code; 
+	for(int i = 0; i < ROWS; i++) {
+		for (int j = 0; j < COLUMNS; j++) {
+			if((code = is_element(mat[i][j]))) {
+				crea_elemento(code, i, j);
+				n_sprites++;
+			}
+		}
+	}
+
+	SPR_actualizarSprites((u16*) 0x07000000, n_sprites);
 }
 
 
@@ -91,7 +107,9 @@ void init_grafA()
 	videoSetMode(MODE_3_2D | DISPLAY_SPR_1D_LAYOUT | DISPLAY_SPR_ACTIVE);
 	
 // Tarea 2Aa:
-	// reservar banco F para sprites, a partir de 0x06400000
+	vramSetBankF(VRAM_F_MAIN_SPRITE_0x06400000);					  // reservar banco F para sprites, a partir de 0x06400000
+	dmaCopy(SpritesPal, (void*) 0x05000200, sizeof(SpritesPal));	  // carregar paleta a Sprite Palette
+	dmaCopy(SpritesTiles, (void *) 0x06400000, sizeof(SpritesTiles)); // carregar tiles a 0x06400000
 
 // Tareas 2Ba y 2Ca:
 	// reservar banco E para fondos 1 y 2, a partir de 0x06000000

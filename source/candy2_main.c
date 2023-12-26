@@ -21,7 +21,7 @@
 /* variables globales */
 char matrix[ROWS][COLUMNS];		// matriz global de juego
 int seed32;						// semilla de n�meros aleatorios
-int level = 0;					// nivel del juego (nivel inicial = 0)
+int level = 9;					// nivel del juego (nivel inicial = 0)
 int points;						// contador global de puntos
 int movements;					// n�mero de movimientos restantes
 int gelees;						// n�mero de gelatinas restantes

@@ -1,5 +1,5 @@
 @;=                                                               		=
-@;== candy2_supo.s: rutinas de soporte a la práctia CandyNDS (fase 2) ===
+@;== candy2_supo.s: rutinas de soporte a la prï¿½ctia CandyNDS (fase 2) ===
 @;=                                                         			=
 @;=== Analista-programador: santiago.romani@urv.cat			 		  ===
 @;=                                                         	      	=
@@ -16,40 +16,40 @@
 @;busca_elemento(int fil, int col);
 @;Rutina para buscar un elemento dentro del vector de elementos, a partir de las
 @;	coordenadas de fila y columna del elemento, que se tienen que contrastar con
-@;	las coordenadas (px,py) de cada sprite. La rutina devuelve el índice del
+@;	las coordenadas (px,py) de cada sprite. La rutina devuelve el ï¿½ndice del
 @;	elemento, o ROWS*COLUMNS si no lo ha encontrado
-@;	Parámetros:
+@;	Parï¿½metros:
 @;		R0 :	fila del elemento
 @;		R1 :	columna del elemento
 @;	Resultado:
-@;		R0 :	índice del elemento encontrado, o ROWS*COLUMNS 
+@;		R0 :	ï¿½ndice del elemento encontrado, o ROWS*COLUMNS 
 	.global busca_elemento
 busca_elemento:
 		push {r2-r6,lr}
 		
 		ldr r6, =n_sprites
-		ldr r6, [r6]			@;R6 = número de sprites creados
+		ldr r6, [r6]			@;R6 = nï¿½mero de sprites creados
 		mov r2, r1, lsl #5		@;R2 = px (columna * 32)
 		mov r3, r0, lsl #5		@;R3 = py (fila * 32)
-		mov r0, #0				@;R0 es índice de elementos
-		ldr r4, =vect_elem		@;R4 es dirección base del vector elementos
+		mov r0, #0				@;R0 es ï¿½ndice de elementos
+		ldr r4, =vect_elem		@;R4 es direcciï¿½n base del vector elementos
 	.Lbe_bucle:
 		ldsh r5, [r4, #ELE_II]
 		cmp r5, #-1
 		beq .Lbe_cont			@;continuar si vect_elem[i].ii == -1
 		ldsh r5, [r4, #ELE_PX]
 		cmp r5, r2
-		bne .Lbe_cont			@;continuar si vect_elem[i].px != posición px
+		bne .Lbe_cont			@;continuar si vect_elem[i].px != posiciï¿½n px
 		ldsh r5, [r4, #ELE_PY]
 		cmp r5, r3
-		beq .Lbe_finbucle		@;salir si vect_elem[i].py == posición py
+		beq .Lbe_finbucle		@;salir si vect_elem[i].py == posiciï¿½n py
 		
 	.Lbe_cont:
 		add r4, #ELE_TAM
 		add r0, #1				@;repetir para todos los sprites creados
 		cmp r0, r6
 		blo .Lbe_bucle
-		mov r0, #ROWS*COLUMNS	@;código de no encontrado (>= n_sprites)
+		mov r0, #ROWS*COLUMNS	@;cï¿½digo de no encontrado (>= n_sprites)
 		
 	.Lbe_finbucle:
 		
@@ -58,29 +58,29 @@ busca_elemento:
 	
 @;crea_elemento(int tipo, int fil, int col);
 @;Rutina para crear un nuevo elemento de juego, buscando un sprite libre
-@;	(ii = -1) y asignandole el índice de baldosa correspondiente al tipo del
-@;	elemento que se pasa por parámetro, además de la posición inicial según la
+@;	(ii = -1) y asignandole el ï¿½ndice de baldosa correspondiente al tipo del
+@;	elemento que se pasa por parï¿½metro, ademï¿½s de la posiciï¿½n inicial segï¿½n la
 @;	fila y columna en la matriz de juego;
-@;	La función devuelve como resultado el índice del sprite/elemento que se ha
+@;	La funciï¿½n devuelve como resultado el ï¿½ndice del sprite/elemento que se ha
 @;	reservado, o bien el total de posiciones del tablero de juego (ROWS*COLUMNS)
 @;	si no ha encontrado ninguno libre.
-@;	Parámetros:
+@;	Parï¿½metros:
 @;		R0 :	tipo de elemento
 @;		R1 :	fila del elemento
 @;		R2 :	columna del elemento
 @;	Resultado:
-@;		R0 :	índice del elemento encontrado, o ROWS*COLUMNS 
+@;		R0 :	ï¿½ndice del elemento encontrado, o ROWS*COLUMNS 
 	.global crea_elemento
 crea_elemento:
 		push {r1-r5,lr}
 		
 		mov r3, r0					@;R3 = tipo de elemento
 	@;	int i = 0;
-		mov r0, #0					@;R0 es índice de elementos (i)
+		mov r0, #0					@;R0 es ï¿½ndice de elementos (i)
 		
 	@;	while ((vect_elem[i].ii != -1) && (i < ROWS*COLUMNS))
 	@;		i++;
-		ldr r4, =vect_elem			@;R4 es dirección base del vector elementos
+		ldr r4, =vect_elem			@;R4 es direcciï¿½n base del vector elementos
 	.Lce_bucle:
 		ldsh r5, [r4, #ELE_II]
 		cmp r5, #-1
@@ -126,15 +126,15 @@ crea_elemento:
 
 @;elimina_elemento(int fil, int col);
 @;Rutina para eliminar un elemento de juego, a partir de sus coordenadas fila
-@;	y columna actuales; si se encuentra dicho elemento, se libera la posición
+@;	y columna actuales; si se encuentra dicho elemento, se libera la posiciï¿½n
 @;	del vector y se oculta el sprite asociado.
-@;	La función devuelve el índice del elemento eliminado, o bien el total de
+@;	La funciï¿½n devuelve el ï¿½ndice del elemento eliminado, o bien el total de
 @;	posiciones del tablero de juego (ROWS*COLUMNS) si no lo ha encontrado.
-@;	Parámetros:
+@;	Parï¿½metros:
 @;		R0 :	fila del elemento
 @;		R1 :	columna del elemento
 @;	Resultado:
-@;		R0 :	índice del elemento encontrado, o ROWS*COLUMNS
+@;		R0 :	ï¿½ndice del elemento encontrado, o ROWS*COLUMNS
 	.global elimina_elemento
 elimina_elemento:
 		push {r1-r4,lr}
@@ -162,18 +162,18 @@ elimina_elemento:
 
 
 @;activa_elemento(int fil, int col, int f2, int c2);
-@;Rutina para activar la animación del movimiento de un elemento/sprite
-@;	a partir de sus coordenadas fila y columna actuales así como la posición
+@;Rutina para activar la animaciï¿½n del movimiento de un elemento/sprite
+@;	a partir de sus coordenadas fila y columna actuales asï¿½ como la posiciï¿½n
 @;	del tablero donde se tiene que mover dicho elemento.
-@;	La función devuelve el índice del elemento activado, o bien el total de
+@;	La funciï¿½n devuelve el ï¿½ndice del elemento activado, o bien el total de
 @;	posiciones del tablero de juego (ROWS*COLUMNS) si no lo ha encontrado.*/
-@;	Parámetros:
+@;	Parï¿½metros:
 @;		R0 :	fila del elemento
 @;		R1 :	columna del elemento
 @;		R2 :	fila destino
 @;		R3 :	columna destino
 @;	Resultado:
-@;		R0 :	índice del elemento encontrado, o ROWS*COLUMNS
+@;		R0 :	ï¿½ndice del elemento encontrado, o ROWS*COLUMNS
 	.global activa_elemento
 activa_elemento:
 		push {r1-r7,lr}
@@ -206,15 +206,15 @@ activa_elemento:
 
 
 @;activa_escalado(int fil, int col);
-@;Rutina para activar la animación de escalado de un elemento/sprite
+@;Rutina para activar la animaciï¿½n de escalado de un elemento/sprite
 @;	a partir de sus coordenadas fila y columna actuales.
-@;	La función devuelve el índice del elemento activado, o bien el total de
+@;	La funciï¿½n devuelve el ï¿½ndice del elemento activado, o bien el total de
 @;	posiciones del tablero (ROWS*COLUMNS) si no lo ha encontrado.
-@;	Parámetros:
+@;	Parï¿½metros:
 @;		R0 :	fila del elemento
 @;		R1 :	columna del elemento
 @;	Resultado:
-@;		R0 :	índice del elemento encontrado, o ROWS*COLUMNS
+@;		R0 :	ï¿½ndice del elemento encontrado, o ROWS*COLUMNS
 	.global activa_escalado
 activa_escalado:
 		push {r1,lr}
@@ -236,15 +236,15 @@ activa_escalado:
 
 
 @;desactiva_escalado(int fil, int col);
-@;Rutina para desactivar la animación de escalado de un elemento/sprite
+@;Rutina para desactivar la animaciï¿½n de escalado de un elemento/sprite
 @;	a partir de sus coordenadas fila y columna actuales.
-@;	La función devuelve el índice del elemento activado, o bien el total de
+@;	La funciï¿½n devuelve el ï¿½ndice del elemento activado, o bien el total de
 @;	posiciones del tablero (ROWS*COLUMNS) si no lo ha encontrado.
-@;	Parámetros:
+@;	Parï¿½metros:
 @;		R0 :	fila del elemento
 @;		R1 :	columna del elemento
 @;	Resultado:
-@;		R0 :	índice del elemento encontrado, o ROWS*COLUMNS
+@;		R0 :	ï¿½ndice del elemento encontrado, o ROWS*COLUMNS
 	.global desactiva_escalado
 desactiva_escalado:
 		push {lr}
@@ -266,15 +266,15 @@ desactiva_escalado:
 
 
 @;fija_metabaldosa(u16 * mapbase, int fil, int col, int imeta);
-@;Rutina para guardar, en el mapa de baldosas cuya dirección base se pasa por
-@;	parámetro, los índices de las baldosas correspondientes a una metabaldosa
-@;	de MTROWS x MTCOLS (MTWIDTH x MTHEIGHT píxeles), a partir de la posición
-@;	(fil, col) del espacio de juego y del índice de la metabaldosa.
-@;	Parámetros:
-@;		R0 :	dirección base del mapa de baldosas (mapbase)
+@;Rutina para guardar, en el mapa de baldosas cuya direcciï¿½n base se pasa por
+@;	parï¿½metro, los ï¿½ndices de las baldosas correspondientes a una metabaldosa
+@;	de MTROWS x MTCOLS (MTWIDTH x MTHEIGHT pï¿½xeles), a partir de la posiciï¿½n
+@;	(fil, col) del espacio de juego y del ï¿½ndice de la metabaldosa.
+@;	Parï¿½metros:
+@;		R0 :	direcciï¿½n base del mapa de baldosas (mapbase)
 @;		R1 :	fila del elemento
 @;		R2 :	columna del elemento
-@;		R3 :	índice de metabaldosa (imeta)
+@;		R3 :	ï¿½ndice de metabaldosa (imeta)
 	.global fija_metabaldosa
 fija_metabaldosa:
 		push {r1-r10, lr}
@@ -282,7 +282,7 @@ fija_metabaldosa:
 		mov r4, #MTOTAL
 		mul r5, r3, r4
 	@;	i_baldosa = imeta*MTOTAL;
-		mov r3, r5					@;R3 = índice inicial de baldosas simples
+		mov r3, r5					@;R3 = ï¿½ndice inicial de baldosas simples
 		mov r4, #MTROWS
 		mul r5, r1, r4
 		mov r1, r5					@;R1 = i*MTROWS
@@ -297,7 +297,7 @@ fija_metabaldosa:
 	@;		base_fila = mapbase + (i*MTROWS + df)*32;
 		add r8, r1, r6
 		add r10, r0, r8, lsl #6		@;R10 = dir. base de fila actual en mapa
-									@;R8*32*2 -> 32 columnas * 2 bytes/posición
+									@;R8*32*2 -> 32 columnas * 2 bytes/posiciï¿½n
 									
 		mov r9, #0					@;R9 es columna de metabaldosa (dc)
 	@;		for (dc = 0; dc < MTCOLS; dc++)
@@ -307,7 +307,7 @@ fija_metabaldosa:
 		add r8, r10, r8, lsl #1		@;R8 = dir. base de (fil,col) actual en mapa
 		strh r3, [r8]
 	@;			i_baldosa++;	
-		add r3, #1					@;aumentar índice de baldosa simple
+		add r3, #1					@;aumentar ï¿½ndice de baldosa simple
 		add r9, #1
 		cmp r9, #MTCOLS
 		blo .Lfm_for_dc				@;repetir para todas las filas metabaldosa
@@ -322,7 +322,7 @@ fija_metabaldosa:
 @;elimina_gelatina(int fil, int col);
 @;Rutina para eliminar una gelatina del tablero de juego, a partir de sus 
 @;	coordenadas de fila y columna.
-@;	Parámetros:
+@;	Parï¿½metros:
 @;		R0 :	fila del elemento
 @;		R1 :	columna del elemento
 	.global elimina_gelatina
@@ -339,29 +339,29 @@ elimina_gelatina:
 	@;	imeta = mat_gel[fil,col].im;
 		ldrb r3, [r4, #GEL_IM]
 	@;	if (imeta > 8)
-	@;	{								// si código animación gelatina doble
+	@;	{								// si cï¿½digo animaciï¿½n gelatina doble
 		cmp r3, #8
 		blo .Leligel_else
-	@;		imeta -= 8;					// pasar a animación gelatina simple
+	@;		imeta -= 8;					// pasar a animaciï¿½n gelatina simple
 		sub r3, #8
 	@;		mat_gel[fil,col].im = imeta
 		strb r3, [r4, #GEL_IM]
 		b .Leligel_finif
 	@;	}
 	@;	else
-	@;	{								// si código animación gelatina simple
+	@;	{								// si cï¿½digo animaciï¿½n gelatina simple
 	.Leligel_else:
 	@;		mat_gel[fil,col].ii = -1	// desactivar gelatina
 		mov r5, #-1
 		strb r5, [r4, #GEL_II]
-	@;		imeta = 19;					// índice metabaldosa vacía
+	@;		imeta = 19;					// ï¿½ndice metabaldosa vacï¿½a
 		mov r3, #19
 	@;	}
 	.Leligel_finif:
 		mov r2, r1
 		mov r1, r0
 		mov r0, #0x06000000
-		bl fijar_metabaldosa
+		bl fija_metabaldosa
 		
 		pop {r0-r5,pc}
 
