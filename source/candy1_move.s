@@ -144,18 +144,26 @@ cuenta_repeticiones:
 @;				queden movimientos pendientes. 
 	.global baja_elementos
 baja_elementos:
-		push {r4, lr}
+		push {r1, r4, lr}
 		
 		mov r4, r0							@; r4 =  @matrix
 		.Lif_vertical_down_shift:
 			bl baja_verticales
 			cmp r0, #1						@; if(baja_verticales(r4)) return 1;
-			beq .Lend_if_vertical_down_shift
+			bne .Lelse_vertical_down_shift
+
+			mov r1, #1
+			ldr r0, =update_spr
+			strh r1, [r0]			@; update_spr = 1
+
+			b .Lend_if_vertical_down_shift
 		.Lelse_vertical_down_shift:
 			bl baja_laterales				
 		.Lend_if_vertical_down_shift:
 
-		pop {r4, pc}
+		mov r0, r4
+
+		pop {r1, r4, pc}
 
 
 
