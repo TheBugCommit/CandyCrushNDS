@@ -171,7 +171,7 @@ baja_elementos:
 @;	Resultado:
 @;		R0 = 1 indica que se ha realizado alg�n movimiento. 
 baja_verticales:
-		push {r1-r3, r5-r7, lr}
+		push {r1-r3, r5-r10, lr}
 		
 		mov r7, #0								@; r7 = no movements
 		mov r6, #ROWS*COLUMNS - 1				@; offset = ROWS*COLUMNS - 1
@@ -201,13 +201,13 @@ baja_verticales:
 		mov r1, #SOUTH							@; orientation = SOUTH
 		mov r5, #0								@; offset = 0
 		.Lfor_first_row:
-			mov r2, #0							@; i = 0
+			mov r8, #0							@; i = 0
 			mov r6, r5							@; save offset
 			.Lwhile_generete_rand_on_top:
-				ldrb r3, [r4, r6]				@; r3 = matrix[i][j]
+				ldrb r9, [r4, r6]				@; r9 = matrix[i][j]
 
 				.Lif_void_pos_gen_rand:
-					mov r0, r3
+					mov r0, r9
 					bl is_void_element
 					cmp r0, #0
 					beq .Lelse_if_is_gap
@@ -216,11 +216,24 @@ baja_verticales:
 					mov r0, #6
 					bl mod_random
 					add r0, #1
-					add r0, r3					@; jelly_code + element_code
+					mov r10, r0					@; copy r0 element code
+
+					mov r1, #-1					@; r1 = row		
+					mov r2, r5					@; TODO: acabar de crear elements i mourels desde d'alt
+					bl crea_elemento			@; create sprite element, in (-1,col) 
+				
+					mov r0, #-1
+					mov r1, r5
+					mov r2, r8
+					mov r3, r5
+					bl activa_elemento			@; activa_elemento(-1, col, row, col)
+
+					mov r0, r10					@; restore r0 element code
+					add r0, r9					@; jelly_code + element_code
 					strb r0, [r4, r6]
 					b .Lend_while_generete_rand_on_top
 				.Lelse_if_is_gap:
-					mov r0, r3
+					mov r0, r9
 					bl is_gap
 					cmp r0, #1
 					beq .Lend_if_void_pos_gen_rand
@@ -232,8 +245,8 @@ baja_verticales:
 				bl move_offset_by_orientation	
 				mov r6, r0
 
-				add r2, #1						@; i++
-				cmp r2, #ROWS					@; i < ROWS
+				add r8, #1						@; i++
+				cmp r8, #ROWS					@; i < ROWS
 				blo .Lwhile_generete_rand_on_top
 			.Lend_while_generete_rand_on_top:
 
@@ -244,7 +257,7 @@ baja_verticales:
 
 		mov r0, r7							@; return if have been movements
 		
-		pop {r1-r3, r5-r7, pc}
+		pop {r1-r3, r5-r10, pc}
 
 
 
@@ -441,7 +454,7 @@ search_side_element:
 @;		R5 = offset1
 @; 		R6 = offset2
 move_elements: 
-	push {r0-r1, lr}
+	push {r0-r3, r5-r7, lr}
 
 	ldrb r1, [r4, r5]			@; r1 = matrix[offset1]
 	
@@ -456,6 +469,29 @@ move_elements:
 	add r1, r0					@; matrix[offset2] + offset1 element code
 	strb r1, [r4, r6]			@; store new code to matrix[offset2]
 
-	pop {r0-r1, pc}
+
+	@; activate element animation
+	sub sp, #8
+	mov r0, r5					@; r0 = offset 1
+	mov r1, sp					@; @row
+	add r2, sp, #4				@; @column
+	bl get_row_columun
+	ldr r7, [r1]				@; r7 = row1			
+	ldr r5, [r1, #4]			@; r5 = column1
+
+	mov r0, r6					@; r0 = offset 2
+	mov r1, sp					@; @row
+	add r2, sp, #4				@; @column
+	bl get_row_columun
+	ldr r2, [r1]				@; r2 = row2			
+	ldr r3, [r1, #4]			@; r3 = column2
+
+	mov r0, r7					@; r0 = row1
+	mov r1, r5					@; r1 = column1
+	add sp, #8					@; clear sp
+
+	bl activa_elemento
+
+	pop {r0-r3, r5-r7, pc}
 
 .end
