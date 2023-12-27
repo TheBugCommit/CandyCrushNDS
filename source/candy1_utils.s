@@ -96,6 +96,7 @@ is_solid:
 	.global is_gap
 is_gap:
 	push {lr}
+	and r0, #15
 	teq r0, #15
 	moveq r0, #1
 	movne r0, #0
