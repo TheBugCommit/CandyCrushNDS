@@ -95,7 +95,7 @@ int main(void)
 		if (initializing)		//////	SECCI�N DE INICIALIZACI�N	//////
 		{
 			inicializa_matriz(matrix, level);
-			//copia_mapa(matrix, 8);
+			//copia_mapa(matrix, level);
 			genera_sprites(matrix);
 			genera_mapa1(matrix);
 			genera_mapa2(matrix);

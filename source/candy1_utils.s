@@ -113,8 +113,9 @@ is_jelly:
 		mov r1, r0				@; copy element code
 		
 		.Lif_is_jelly:
-			bl is_element
-			cmp r0, #0
+			bl is_solid_or_gap_element
+			cmp r0, #1
+			moveq r0, #0
 			beq .Lend_is_jelly_if
 
 			mov r0, r1, lsr #3 

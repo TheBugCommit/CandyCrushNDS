@@ -84,7 +84,26 @@ void genera_mapa2(char mat[][COLUMNS])
 	control de la animaci�n de las gelatinas mat_gel[][COLUMNS]. */
 void genera_mapa1(char mat[][COLUMNS])
 {
+	int index = 19;
+	char jelly_code;
+	for(int i = 0; i < ROWS; i++) {
+		for (int j = 0; j < COLUMNS; j++) {
+			mat_gel[i][j].ii = -1;	
 
+			if(!is_solid(mat[i][j]) && !is_jelly(mat[i][j])) {
+				index = 19;
+			} else if(is_solid(mat[i][j])) {
+				index = 16;
+			} else if(jelly_code = is_jelly(mat[i][j])) {
+				jelly_code--;
+				index = (rand() % (jelly_code - (jelly_code-7) + 1)) + (jelly_code-7);
+				mat_gel[i][j].ii = (rand() % 10) + 1;	
+				mat_gel[i][j].im = index;
+			}
+
+			fija_metabaldosa((void*)0x06000000, i, j, index);
+		}
+	}
 
 }
 
@@ -116,8 +135,6 @@ void init_grafA()
 	
 // Tarea 2Aa:
 	vramSetBankF(VRAM_F_MAIN_SPRITE_0x06400000);					  // reservar banco F para sprites, a partir de 0x06400000
-	
-
 // Tareas 2Ba y 2Ca:
 	// reservar banco E para fondos 1 y 2, a partir de 0x06000000
 	vramSetBankE(VRAM_E_MAIN_BG);
@@ -138,11 +155,13 @@ void init_grafA()
 // Tarea 2Ba:
 	// inicializar el fondo 2 con prioridad 2
 	bg2A = bgInit(2, BgType_Text8bpp, BgSize_T_256x256, 1, 1); 
+	REG_BG2CNT = (REG_BG2CNT & 0xFFFC) | 0x0002;
 
 
 // Tarea 2Ca:
 	//inicializar el fondo 1 con prioridad 0
-
+	bg1A = bgInit(1, BgType_Text8bpp, BgSize_T_256x256, 0, 1); 
+	REG_BG1CNT = REG_BG1CNT & 0xFFFC;
 
 
 // Tareas 2Ba y 2Ca:
