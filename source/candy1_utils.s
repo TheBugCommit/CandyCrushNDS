@@ -115,6 +115,7 @@ is_jelly:
 		.Lif_is_jelly:
 			bl is_solid_or_gap_element
 			cmp r0, #1
+			moveq r0, #0
 			beq .Lend_is_jelly_if
 
 			mov r0, r1, lsr #3 

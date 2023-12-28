@@ -37,8 +37,9 @@
 @;Tarea 2H: actualiza el desplazamiento del fondo 3
 	.global rsi_vblank
 rsi_vblank:
-		push {r0-r3, lr}
+		push {r0-r6, lr}
 		
+@;Tareas 2Ea
 		ldr r3, =update_spr
 		ldrh r2, [r3]
 
@@ -54,15 +55,50 @@ rsi_vblank:
 		strh r2, [r3]
 
 		.Lno_spr_update:
-@;Tareas 2Ea
-
-
 @;Tarea 2Ga
+		ldr r1, =update_gel
+		ldrh r0, [r1]
+		cmp r0, #0
+		beq .Lno_update_gel
+		
+		mov r0, #0
+		strh r0, [r1]			@; update_gel = 0 
 
+		ldr r0, =0x06000000
+		ldr r4, =mat_gel
+		mov r6, #0				@; i = 0;
+		.Lfor_mat_gel_rows:
+			mov r5, #0			@; j = 0;
+			.Lfor_mat_gel_cols:
+				ldsb r1, [r4, #GEL_II]
+				cmp r1, #0
+				bne .Lfor_mat_gel_cols_cont
 
+				mov r1, r6
+				mov r2, r5
+				ldrb r3, [r4, #GEL_IM]
+				bl fija_metabaldosa			@; fija_metabaldosa(0x06000000, i, j, mat_gel[i][j].im)
+
+				mov r1, #10
+				strb r1, [r4, #GEL_II]
+
+				.Lfor_mat_gel_cols_cont:
+
+				add r4, #GEL_TAM	@; increment offset
+				add r5, #1
+				cmp r5, #COLUMNS
+				blo .Lfor_mat_gel_cols
+			.Lend_for_mat_gel_cols:
+
+			add r6, #1
+			cmp r6, #ROWS
+			blo .Lfor_mat_gel_rows
+		.Lend_for_mat_gel_rows:
+		
+		.Lno_update_gel:
 @;Tarea 2Ha
 
-		pop {r0-r3, pc}
+		pop {r0-r6, pc}
 
 
 
