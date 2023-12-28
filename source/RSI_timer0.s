@@ -97,7 +97,22 @@ rsi_vblank:
 		
 		.Lno_update_gel:
 @;Tarea 2Ha
+		ldr r0, =update_bg3
+		ldrh r1, [r0]
+		cmp r1, #0
+		beq .Lno_update_bg3
 
+		ldr r1, =offsetBG3X
+		ldrh r2, [r1]
+
+		mov r2, r2, lsl #8			@; offsetBG3X << 8 => 0:20:8
+		ldr r1, =REG_BG3X
+		str r2, [r1]				@; REG_BG3X = offsetBG3X 
+
+		mov r1, #0
+		strh r1, [r0]				@; update_bg3 = 0
+
+		.Lno_update_bg3:
 		pop {r0-r6, pc}
 
 
