@@ -116,8 +116,10 @@ void genera_mapa1(char mat[][COLUMNS])
 	de la pantalla. */
 void ajusta_imagen3(int ibg)
 {
-
-
+	bgSetCenter(ibg, 256, 128);
+	bgSetRotate(ibg, degreesToAngle(-90));
+	bgSetScroll(ibg, 128, 0);
+	bgUpdate();
 }
 
 
@@ -140,28 +142,28 @@ void init_grafA()
 	vramSetBankE(VRAM_E_MAIN_BG);
 // Tarea 2Da:
 	// reservar bancos A y B para fondo 3, a partir de 0x06020000
-
-
+	vramSetBankA(VRAM_A_MAIN_BG_0x06020000);
+	vramSetBankB(VRAM_B_MAIN_BG_0x06020000);
 
 
 // Tarea 2Aa:
 	// cargar las baldosas de la variable SpritesTiles[] a partir de la
 	// direcci�n virtual de memoria gr�fica para sprites, y cargar los colores
 	// de paleta asociados contenidos en  la variable SpritesPal[]
-	dmaCopy(SpritesPal, (void*) 0x05000200, sizeof(SpritesPal));	  // carregar paleta a Sprite Palette
-	dmaCopy(SpritesTiles, (void *) 0x06400000, sizeof(SpritesTiles)); // carregar tiles a 0x06400000
+	dmaCopy(SpritesPal, SPRITE_PALETTE, sizeof(SpritesPal));	  // carregar paleta a Sprite Palette
+	dmaCopy(SpritesTiles, SPRITE_GFX, sizeof(SpritesTiles)); // carregar tiles a 0x06400000
 
 
 // Tarea 2Ba:
 	// inicializar el fondo 2 con prioridad 2
 	bg2A = bgInit(2, BgType_Text8bpp, BgSize_T_256x256, 1, 1); 
-	REG_BG2CNT = (REG_BG2CNT & 0xFFFC) | 0x0002;
+	REG_BG2CNT |= BG_PRIORITY(2);
 
 
 // Tarea 2Ca:
 	//inicializar el fondo 1 con prioridad 0
 	bg1A = bgInit(1, BgType_Text8bpp, BgSize_T_256x256, 0, 1); 
-	REG_BG1CNT = REG_BG1CNT & 0xFFFC;
+	REG_BG1CNT |= BG_PRIORITY(0);
 
 
 // Tareas 2Ba y 2Ca:
@@ -175,11 +177,13 @@ void init_grafA()
 	
 // Tarea 2Da:
 	// inicializar el fondo 3 con prioridad 3
-
+	bg3A = bgInit(3, BgType_Bmp16, BgSize_B16_512x256, 8, 0); 
+	REG_BG3CNT |= BG_PRIORITY(3);
 
 	// descomprimir (y cargar) la imagen de la variable FondoBitmap[] a partir
 	// de la direcci�n virtual de v�deo correspondiente al banco de v�deoRAM A
-
+	decompress(FondoBitmap, bgGetGfxPtr(bg3A), LZ77Vram);
+	ajusta_imagen3(bg3A);
 
 
 	// fijar display A en pantalla inferior (t�ctil)
