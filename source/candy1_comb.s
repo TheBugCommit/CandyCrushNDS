@@ -280,7 +280,7 @@ sugiere_combinacion:
 		add r11, r10, #1			@; r11 = @inital_position_y
 		add r12, r10, #2			@; r12 = @inital_position_code
 
-		mov r6, #ROWS*COLUMNS
+		mov r0, #ROWS*COLUMNS
 		bl mod_random
 		mov r6, r0				   @; r6 = rand_offset 
 
