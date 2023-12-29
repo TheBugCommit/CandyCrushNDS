@@ -277,11 +277,6 @@ update_elment:
 		mov r2, r4
 		bl SPR_moverSprite
 
-		ldr r0, =OAM
-		ldr r1, =n_sprites
-		ldr r1, [r1]
-		bl SPR_actualizarSprites
-
 		.Lignore_inactive_elem:
 
 		mov r0, r3					@; return element_moved
