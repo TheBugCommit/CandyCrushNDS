@@ -16,7 +16,7 @@
 	update_spr:	.hword	0			@; 1 -> actualizar sprites
 		.global timer0_on
 	timer0_on:	.hword	0 			@; 1 -> timer0 en marcha, 0 -> apagado
-	divFreq0:   .hword	-8727		@; divisor de frecuencia inicial para timer 0 -((F/64)/50Hz) = -8727
+	divFreq0:   .hword	-5754		@; divisor de frecuencia inicial para timer 0 -((F/64)/91Hz) = -5754
 
 
 @;-- .bss. variables (globales) no inicializadas ---
@@ -37,8 +37,9 @@
 @;Tarea 2H: actualiza el desplazamiento del fondo 3
 	.global rsi_vblank
 rsi_vblank:
-		push {r0-r3, lr}
+		push {r0-r6, lr}
 		
+@;Tareas 2Ea
 		ldr r3, =update_spr
 		ldrh r2, [r3]
 
@@ -54,15 +55,65 @@ rsi_vblank:
 		strh r2, [r3]
 
 		.Lno_spr_update:
-@;Tareas 2Ea
-
-
 @;Tarea 2Ga
+		ldr r1, =update_gel
+		ldrh r0, [r1]
+		cmp r0, #0
+		beq .Lno_update_gel
+		
+		mov r0, #0
+		strh r0, [r1]			@; update_gel = 0 
 
+		ldr r0, =0x06000000
+		ldr r4, =mat_gel
+		mov r6, #0				@; i = 0;
+		.Lfor_mat_gel_rows:
+			mov r5, #0			@; j = 0;
+			.Lfor_mat_gel_cols:
+				ldsb r1, [r4, #GEL_II]
+				cmp r1, #0
+				bne .Lfor_mat_gel_cols_cont
 
+				mov r1, r6
+				mov r2, r5
+				ldrb r3, [r4, #GEL_IM]
+				bl fija_metabaldosa			@; fija_metabaldosa(0x06000000, i, j, mat_gel[i][j].im)
+
+				mov r1, #10
+				strb r1, [r4, #GEL_II]
+
+				.Lfor_mat_gel_cols_cont:
+
+				add r4, #GEL_TAM	@; increment offset
+				add r5, #1
+				cmp r5, #COLUMNS
+				blo .Lfor_mat_gel_cols
+			.Lend_for_mat_gel_cols:
+
+			add r6, #1
+			cmp r6, #ROWS
+			blo .Lfor_mat_gel_rows
+		.Lend_for_mat_gel_rows:
+		
+		.Lno_update_gel:
 @;Tarea 2Ha
+		ldr r0, =update_bg3
+		ldrh r1, [r0]
+		cmp r1, #0
+		beq .Lno_update_bg3
 
-		pop {r0-r3, pc}
+		ldr r1, =offsetBG3X
+		ldrh r2, [r1]
+
+		mov r2, r2, lsl #8			@; offsetBG3X << 8 => 0:20:8
+		ldr r1, =REG_BG3X
+		str r2, [r1]				@; REG_BG3X = offsetBG3X 
+
+		mov r1, #0
+		strh r1, [r0]				@; update_bg3 = 0
+
+		.Lno_update_bg3:
+		pop {r0-r6, pc}
 
 
 
@@ -107,9 +158,9 @@ activa_timer0:
 desactiva_timer0:
 		push {r0-r1, lr}
 
-		ldr r0, =TIMER0_DATA
+		ldr r0, =TIMER0_CR
 		mov r1, #0
-		str r1, [r0]		@; disable timer
+		strh r1, [r0]		@; disable timer
 
 		ldr r0, =timer0_on
 		strh r1, [r0]		@; timer0_on = 0
@@ -169,10 +220,10 @@ rsi_timer0:
 		mov r0, #1
 		strh r0, [r1]				@; update_spr = 1
 
-		ldr r1, =TIMER0_DATA
-		ldsh r0, [r1]
-		subs r0, #5					@; decrement TIMER_FREQ => divFreq0 * 0.01 (1%)
-		strh r0, [r1]
+		@; ldr r1, =TIMER0_DATA
+		@; ldsh r0, [r1]
+		@; subs r0, #2					@; decrement TIMER_FREQ => divFreq0 * 0.01 (1%)
+		@; strh r0, [r1]
 
 		b .Lend_rsi_timer0
 		.Lelement_not_moved:

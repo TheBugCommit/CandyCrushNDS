@@ -108,7 +108,7 @@ hay_secuencia:
 @;		R1 = direcci�n de la matriz de marcas
 	.global elimina_secuencias
 elimina_secuencias:
-		push {r4-r8, lr}
+		push {r0-r2, r4-r8, lr}
 		
 		mov r8, #0
 		ldr r6, =num_sec
@@ -143,12 +143,36 @@ elimina_secuencias:
 
 					mov r8, r0, lsr #4
 					mov r8, r8, lsl #3
+
+					@; delete or change jelly sprite
+					sub sp, #8
+					mov r0, r7					@; r0 = offset
+					mov r1, sp					@; @row
+					add r2, sp, #4				@; @column
+					bl get_row_columun
+					ldr r0, [r1]				@; r3 = row			
+					ldr r1, [r1, #4]			@; r2 = column
+					add sp, #8					@; clear sp
+					bl elimina_gelatina
+
 					b .Lend_if_is_jelly_reduce
 				.Lelse_is_jelly:
 					mov r8, r6, lsr #3 
 				.Lend_if_is_jelly_reduce:
 
 				strb r8, [r4, r7]
+
+				@; delete sprite
+				sub sp, #8
+				mov r0, r7					@; r0 = offset
+				mov r1, sp					@; @row
+				add r2, sp, #4				@; @column
+				bl get_row_columun
+				ldr r0, [r1]				@; r3 = row			
+				ldr r1, [r1, #4]			@; r2 = column
+				add sp, #8					@; clear sp
+				bl elimina_elemento
+
 			.Lend_if_exists_sequence:
 
 			add r7, #1			@; offset++
@@ -156,10 +180,11 @@ elimina_secuencias:
 			blo .Lwhile_remove_elements
 		.Lend_while_remove_elements:
 
-		mov r0, r4					@; restore @matrix
-		mov r1, r5					@; restore @marks_matrix
+		mov r1, #1
+		ldr r0, =update_spr
+		strh r1, [r0]			@; update_spr = 1
 
-		pop {r4-r8, pc}
+		pop {r0-r2, r4-r8, pc}
 
 	
 @;:::RUTINAS DE SOPORTE:::

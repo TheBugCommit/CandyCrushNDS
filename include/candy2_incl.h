@@ -2,15 +2,15 @@
 
 	$Id: candy2_incl.h $
 
-	Definiciones externas en C para la versión 2 del juego (modo gráfico)
+	Definiciones externas en C para la versiï¿½n 2 del juego (modo grï¿½fico)
 
 ------------------------------------------------------------------------------*/
 
 #include <candy1_incl.h>
 
 // Pixeles por casilla del tablero de juego
-#define MTWIDTH	(256/COLUMNS)			// num. píxeles de ancho (e.g. 32)
-#define MTHEIGHT   (192/ROWS)			// num. píxeles de alto (e.g. 32)
+#define MTWIDTH	(256/COLUMNS)			// num. pï¿½xeles de ancho (e.g. 32)
+#define MTHEIGHT   (192/ROWS)			// num. pï¿½xeles de alto (e.g. 32)
 
 // Dimensiones de las metabaldosas:
 #define MTROWS	(MTHEIGHT/8)			// num. filas metabaldosa (e.g. 4)
@@ -21,10 +21,10 @@
 // esctructura de datos relativos a un elemento
 typedef struct
 {
-	short	ii;				// número de interrupciones pendientes (0..32)
-							// o (-1) si está inactivo
-	short	px;				// posición x (0..256)
-	short	py;				// posición y (-32..192)
+	short	ii;				// nï¿½mero de interrupciones pendientes (0..32)
+							// o (-1) si estï¿½ inactivo
+	short	px;				// posiciï¿½n x (0..256)
+	short	py;				// posiciï¿½n y (-32..192)
 	short	vx;				// velocidad x
 	short	vy;				// velocidad y
 } elemento;
@@ -32,9 +32,9 @@ typedef struct
 // esctructura de datos relativos a una gelatina
 typedef struct
 {
-	char	ii;				// número de interrupciones pendientes (0..10)
-							// o (-1) si está inactivo
-	char	im;				// índice de metabaldosa (0..7/8..15)
+	char	ii;				// nï¿½mero de interrupciones pendientes (0..10)
+							// o (-1) si estï¿½ inactivo
+	char	im;				// ï¿½ndice de metabaldosa (0..7/8..15)
 } gelatina;
 
 
@@ -48,6 +48,10 @@ extern int activa_escalado(int fil, int col);
 extern int desactiva_escalado(int fil, int col);
 extern void fija_metabaldosa(u16 * mapbase, int fil, int col, int imeta);
 extern void elimina_gelatina(int fil, int col);
+extern void reducir_elementos(char mat[][COLUMNS]);
+extern void aumentar_elementos(char mat[][COLUMNS]);
+ 
+
 
 
 	// candy2_graf.c //
