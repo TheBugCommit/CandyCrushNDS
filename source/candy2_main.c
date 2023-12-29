@@ -21,7 +21,7 @@
 /* variables globales */
 char matrix[ROWS][COLUMNS];		// matriz global de juego
 int seed32;						// semilla de n�meros aleatorios
-int level = 4;					// nivel del juego (nivel inicial = 0)
+int level = 10;					// nivel del juego (nivel inicial = 0)
 
 
 /* inicializa_interrupciones(): configura las direcciones de las RSI y los bits
@@ -47,16 +47,17 @@ void inicializa_interrupciones()
 
 
 
-/* Test 2A + 2E + 2Ia: generate and move sprites  */
+/* Test 2IB: delete sprites and jellys  */
 int main(void)
 {
-	seed32 = time(NULL);		// fijar semilla de n�meros aleatorios
+	seed32 = time(NULL);		
 	init_grafA();
 	inicializa_interrupciones();
 
-	consoleDemoInit();			// inicializaci�n de pantalla de texto
+	consoleDemoInit();			
 	printf("candyNDS (version 2: graficos)\n");
-	printf("\x1b[38m\x1b[1;0H Press A, shuffle elements");
+	printf("\x1b[38m\x1b[1;0H Press A, remove sequences");
+	printf("\x1b[38m\x1b[1;0H Press B, restart matrix");
 
 	inicializa_matriz(matrix, level);
 	genera_sprites(matrix);
@@ -64,25 +65,21 @@ int main(void)
 	genera_mapa2(matrix);
 	escribe_matriz(matrix);
 	retardo(5);
-
-	int p1X, p1Y, p2X, p2Y;
+	
 	do {
-		if(procesar_touchscreen(matrix, &p1X, &p1Y, &p2X, &p2Y)) {
-			intercambia_posiciones(matrix, p1X, p1Y, p2X, p2Y);
-			escribe_matriz(matrix);
-		}
-		while(keysHeld() & KEY_TOUCH) {
-			swiWaitForVBlank();
-			scanKeys();
-		}
-
 		swiWaitForVBlank();
 		scanKeys();
+
 		if(keysHeld() & KEY_A) {
-			recombina_elementos(matrix);
+			elimina_secuencias(matrix, mat_mar);
 			escribe_matriz(matrix);
-			activa_timer0(1);
-			while (timer0_on) swiWaitForVBlank();
+		} else if (keysHeld() & KEY_B) {
+			inicializa_matriz(matrix, level);
+			genera_sprites(matrix);
+			genera_mapa1(matrix);
+			genera_mapa2(matrix);
+			escribe_matriz(matrix);
+			retardo(5);
 		}
 	} while(1);
 
