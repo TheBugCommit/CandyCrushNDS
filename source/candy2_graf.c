@@ -39,6 +39,7 @@ void genera_sprites(char mat[][COLUMNS])
 	}
 
 	char code; 
+	n_sprites = 0;
 	for(int i = 0; i < ROWS; i++) {
 		for (int j = 0; j < COLUMNS; j++) {
 			if((code = is_element(mat[i][j]))) {
@@ -63,7 +64,7 @@ void genera_mapa2(char mat[][COLUMNS])
 	unsigned char index[2] = {17, 18};
 	unsigned char in;
 	for(int i = 0; i < ROWS; i++) {
-		in = i % 2 != 0 ? 1 : 0;
+		in = i % 2;
 		for(int j = 0; j < COLUMNS; j++) {
 			fija_metabaldosa((void*)0x06000800, i, j, (is_element(mat[i][j]) || is_solid(mat[i][j])) ? ((unsigned int)index[in]) : 19);
 			in = (in + 1) % 2;

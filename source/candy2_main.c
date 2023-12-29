@@ -81,7 +81,7 @@ int main(void)
 	init_grafA();
 	inicializa_interrupciones();
 
-	consoleDemoInit();			// inicializaci�n de pantalla de texto
+	consoleDemoInit();			
 	printf("candyNDS (version 2: graficos)\n");
 	printf("\x1b[38m\x1b[1;0H  nivel:");
 	printf("\x1b[39m\x1b[2;0H puntos:");
