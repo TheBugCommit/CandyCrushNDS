@@ -55,6 +55,7 @@ int main(void)
 
 	inicializa_matriz(matrix, level);
 	genera_sprites(matrix);
+	genera_mapa1(matrix);
 	genera_mapa2(matrix);
 	escribe_matriz(matrix);
 	do {
