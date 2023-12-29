@@ -25,6 +25,8 @@ TIMER3_CR = 0x0400010E
 @;MEM ADDRESS
 OAM = 0x07000000
 
+REG_BG3X = 0x04000038
+
 @; Estructura 'elemento' (ver fichero 'candy2_incl.h")
 ELE_II = 0
 ELE_PX = 2
@@ -38,6 +40,5 @@ ELE_TAM = 10
 GEL_II = 0
 GEL_IM = 1
 GEL_TAM = 2
-
 
 TICS = 32
