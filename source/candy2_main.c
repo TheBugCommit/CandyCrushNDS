@@ -51,13 +51,6 @@ void inicializa_interrupciones()
 /* Test 2D+2H: init background image and move it */
 int main(void)
 {
-	int lapse = 0;				// contador de tiempo sin actividad del usuario
-	int change = 0;				// =1 indica que ha habido cambios en la matriz
-	int falling = 0;			// =1 indica que los elementos estan bajando
-	int fall_init = 1;			// =1 inicializa la frecuencia de movimiento
-	int initializing = 1;		// =1 indica que hay que inicializar un juego
-	int mX, mY, dX, dY;			// variables de detecci�n de pulsaciones
-
 	seed32 = time(NULL);		// fijar semilla de n�meros aleatorios
 	init_grafA();
 	inicializa_interrupciones();
