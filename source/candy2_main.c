@@ -21,7 +21,7 @@
 /* variables globales */
 char matrix[ROWS][COLUMNS];		// matriz global de juego
 int seed32;						// semilla de n�meros aleatorios
-int level = 10;					// nivel del juego (nivel inicial = 0)
+int level = 11;					// nivel del juego (nivel inicial = 0)
 
 
 /* inicializa_interrupciones(): configura las direcciones de las RSI y los bits
@@ -47,7 +47,7 @@ void inicializa_interrupciones()
 
 
 
-/* Test 2IB: delete sprites and jellys  */
+/* Test 2Ic/d: delete sprites and jellys  */
 int main(void)
 {
 	seed32 = time(NULL);		
@@ -56,13 +56,15 @@ int main(void)
 
 	consoleDemoInit();			
 	printf("candyNDS (version 2: graficos)\n");
-	printf("\x1b[38m\x1b[1;0H Press A, remove sequences");
+	printf("\x1b[38m\x1b[1;0H Press A, drop");
 	printf("\x1b[38m\x1b[1;0H Press B, restart matrix");
 
-	inicializa_matriz(matrix, level);
+	copia_mapa(matrix, level);
 	genera_sprites(matrix);
 	genera_mapa1(matrix);
 	genera_mapa2(matrix);
+	if(hay_secuencia(matrix))
+		elimina_secuencias(matrix, mat_mar);
 	escribe_matriz(matrix);
 	retardo(5);
 	
@@ -71,13 +73,17 @@ int main(void)
 		scanKeys();
 
 		if(keysHeld() & KEY_A) {
-			elimina_secuencias(matrix, mat_mar);
+			baja_elementos(matrix);
 			escribe_matriz(matrix);
+			activa_timer0(1);
+			while (timer0_on) swiWaitForVBlank();			
 		} else if (keysHeld() & KEY_B) {
 			inicializa_matriz(matrix, level);
 			genera_sprites(matrix);
 			genera_mapa1(matrix);
 			genera_mapa2(matrix);
+			if(hay_secuencia(matrix))
+				elimina_secuencias(matrix, mat_mar);
 			escribe_matriz(matrix);
 			retardo(5);
 		}
