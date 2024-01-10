@@ -39,6 +39,7 @@ void genera_sprites(char mat[][COLUMNS])
 	}
 
 	char code; 
+	n_sprites = 0;
 	for(int i = 0; i < ROWS; i++) {
 		for (int j = 0; j < COLUMNS; j++) {
 			if((code = is_element(mat[i][j]))) {
@@ -63,7 +64,7 @@ void genera_mapa2(char mat[][COLUMNS])
 	unsigned char index[2] = {17, 18};
 	unsigned char in;
 	for(int i = 0; i < ROWS; i++) {
-		in = i % 2 != 0 ? 1 : 0;
+		in = i % 2;
 		for(int j = 0; j < COLUMNS; j++) {
 			fija_metabaldosa((void*)0x06000800, i, j, (is_element(mat[i][j]) || is_solid(mat[i][j])) ? ((unsigned int)index[in]) : 19);
 			in = (in + 1) % 2;
@@ -94,7 +95,7 @@ void genera_mapa1(char mat[][COLUMNS])
 				index = 19;
 			} else if(is_solid(mat[i][j])) {
 				index = 16;
-			} else if(jelly_code = is_jelly(mat[i][j])) {
+			} else if((jelly_code = is_jelly(mat[i][j]))) {
 				jelly_code--;
 				index = (rand() % (jelly_code - (jelly_code-7) + 1)) + (jelly_code-7);
 				mat_gel[i][j].ii = (rand() % 10) + 1;	
@@ -143,7 +144,7 @@ void init_grafA()
 // Tarea 2Da:
 	// reservar bancos A y B para fondo 3, a partir de 0x06020000
 	vramSetBankA(VRAM_A_MAIN_BG_0x06020000);
-	vramSetBankB(VRAM_B_MAIN_BG_0x06020000);
+	vramSetBankB(VRAM_B_MAIN_BG_0x06040000);
 
 
 // Tarea 2Aa:
