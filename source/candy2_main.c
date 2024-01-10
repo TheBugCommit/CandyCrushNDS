@@ -31,15 +31,6 @@ int level = 4;					// nivel del juego (nivel inicial = 0)
 void inicializa_interrupciones()
 {
 	irqSet(IRQ_VBLANK, rsi_vblank);
-	TIMER0_CR = 0x00;  		// inicialmente los timers no generan interrupciones
-	irqSet(IRQ_TIMER0, rsi_timer0);		// cargar direcciones de las RSI
-	irqEnable(IRQ_TIMER0);				// habilitar la IRQ correspondiente
-	TIMER1_CR = 0x00;
-	irqSet(IRQ_TIMER1, rsi_timer1);
-	irqEnable(IRQ_TIMER1);
-	TIMER2_CR = 0x00;
-	irqSet(IRQ_TIMER2, rsi_timer2);
-	irqEnable(IRQ_TIMER2);
 	TIMER3_CR = 0x00;
 	irqSet(IRQ_TIMER3, rsi_timer3);
 	irqEnable(IRQ_TIMER3);
@@ -55,16 +46,17 @@ int main(void)
 	init_grafA();
 	inicializa_interrupciones();
 
-	consoleDemoInit();			// inicializaci�n de pantalla de texto
+	consoleDemoInit();			
 	printf("candyNDS (version 2: graficos)\n");
+	printf("\x1b[38m\x1b[4;0H Press Y, move background");
 
 	do {
-		swiWaitForVBlank();
 		scanKeys();
 		if (keysHeld() & KEY_Y) {
 			if (timer3_on) desactiva_timer3();
 			else activa_timer3();
 		}	
+		swiWaitForVBlank();
 	} while(1);
 
 	

@@ -17,7 +17,7 @@
 		.global timer0_on
 	timer0_on:	.hword	0 			@; 1 -> timer0 en marcha, 0 -> apagado
 	divFreq0:   .hword	-8182		@; divisor de frecuencia inicial para timer 0 -((F/64)/64Hz) = -8182 
-									@  divisor de frecuencia se decrementa hasta -((F/64)/91Hz) = -5754
+									@  divisor de frecuencia se decrementa hasta -((F/64)/120Hz) = -4363 
 
 
 @;-- .bss. variables (globales) no inicializadas ---
@@ -128,7 +128,6 @@ rsi_vblank:
 activa_timer0:
 		push {r0-r1, lr}
 		
-		ldr r1, =divF0
 		
 		cmp r0, #0
 		beq .Ltimer0_continue_same_freq
@@ -136,17 +135,16 @@ activa_timer0:
 		ldr r0, =divFreq0
 		ldsh r0, [r0]
 
+		ldr r1, =divF0
 		strh r0, [r1]		@; divF0 = divFreq0
 
-		.Ltimer0_continue_same_freq:
-		ldsh r0, [r1]		@; r0 = divF0
-
 		ldr r1, =TIMER0_DATA
-		mov r0, r0, lsl #16
-        mov r0, r0, lsr #16
-        orr r0, #0xC10000
-		str r0, [r1]		@; TIMER0_DATA = divFreq0
-							@; TIMER0_CR = F/64 | irq enabled | start
+		strh r0, [r1]		@; TIMER0_DATA = divFreq0
+
+		.Ltimer0_continue_same_freq:
+			ldr r1, =TIMER0_CR
+			mov r0, #0xC1
+			strh r0, [r1]		@; TIMER0_CR = F/64 | irq enabled | start
 
 		ldr r1, =timer0_on
 		mov r0, #1
@@ -225,9 +223,9 @@ rsi_timer0:
 
 		ldr r1, =divF0
 		ldsh r0, [r1]
-		adds r0, #76				@; decrement freq
-		ldr r2, =0xFFFFE986				
-		cmp r0, r2					@; if freq >= -5818
+		adds r0, #120				@; decrement freq
+		ldr r2, =0xFFFFEEF5         		
+		cmp r0, r2					@; if freq >= -4363
 		bge .Lend_rsi_timer0
 
 		strh r0, [r1]
@@ -276,11 +274,6 @@ update_elment:
 		mov r1, r2
 		mov r2, r4
 		bl SPR_moverSprite
-
-		ldr r0, =OAM
-		ldr r1, =n_sprites
-		ldr r1, [r1]
-		bl SPR_actualizarSprites
 
 		.Lignore_inactive_elem:
 
