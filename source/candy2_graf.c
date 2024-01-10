@@ -95,7 +95,7 @@ void genera_mapa1(char mat[][COLUMNS])
 				index = 19;
 			} else if(is_solid(mat[i][j])) {
 				index = 16;
-			} else if(jelly_code = is_jelly(mat[i][j])) {
+			} else if((jelly_code = is_jelly(mat[i][j]))) {
 				jelly_code--;
 				index = (rand() % (jelly_code - (jelly_code-7) + 1)) + (jelly_code-7);
 				mat_gel[i][j].ii = (rand() % 10) + 1;	
