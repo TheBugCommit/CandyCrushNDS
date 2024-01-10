@@ -95,7 +95,7 @@ void genera_mapa1(char mat[][COLUMNS])
 				index = 19;
 			} else if(is_solid(mat[i][j])) {
 				index = 16;
-			} else if(jelly_code = is_jelly(mat[i][j])) {
+			} else if((jelly_code = is_jelly(mat[i][j]))) {
 				jelly_code--;
 				index = (rand() % (jelly_code - (jelly_code-7) + 1)) + (jelly_code-7);
 				mat_gel[i][j].ii = (rand() % 10) + 1;	
@@ -144,7 +144,7 @@ void init_grafA()
 // Tarea 2Da:
 	// reservar bancos A y B para fondo 3, a partir de 0x06020000
 	vramSetBankA(VRAM_A_MAIN_BG_0x06020000);
-	vramSetBankB(VRAM_B_MAIN_BG_0x06020000);
+	vramSetBankB(VRAM_B_MAIN_BG_0x06040000);
 
 
 // Tarea 2Aa:

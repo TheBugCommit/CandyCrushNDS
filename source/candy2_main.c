@@ -47,7 +47,7 @@ void inicializa_interrupciones()
 
 
 
-/* Test 2Ic/d: delete sprites and jellys  */
+/* Test 2Ic/d  */
 int main(void)
 {
 	seed32 = time(NULL);		
@@ -56,8 +56,8 @@ int main(void)
 
 	consoleDemoInit();			
 	printf("candyNDS (version 2: graficos)\n");
-	printf("\x1b[38m\x1b[1;0H Press A, drop");
-	printf("\x1b[38m\x1b[1;0H Press B, restart matrix");
+	printf("\x1b[38m\x1b[3;0H Press A, drop");
+	printf("\x1b[38m\x1b[4;0H Press B, restart matrix");
 
 	copia_mapa(matrix, level);
 	genera_sprites(matrix);
@@ -89,6 +89,6 @@ int main(void)
 		}
 	} while(1);
 
-	return(0);					// nunca retornar� del main
+	return(0);
 }
 
