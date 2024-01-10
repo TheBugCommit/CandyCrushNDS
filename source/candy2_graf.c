@@ -33,6 +33,7 @@ void genera_sprites(char mat[][COLUMNS])
 {
 
 	SPR_ocultarSprites(128);
+	SPR_actualizarSprites((u16*) 0x07000000, n_sprites);
 
 	for(int i = 0; i < ROWS*COLUMNS; i++) {
 		vect_elem[i].ii = -1;

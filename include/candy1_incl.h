@@ -12,7 +12,7 @@
 #define COLUMNS	8
 #define DFIL	(24-ROWS*2)				// desplazamiento vertical de filas
 
-#define MAXLEVEL	14					// nivel m�ximo (niveles 0..MAXLEVEL-1)
+#define MAXLEVEL	12					// nivel m�ximo (niveles 0..MAXLEVEL-1)
 
 #define PUNT_SEC3	30					// puntos secuencia de 3 elementos
 #define PUNT_SEC4	60					// puntos secuencia de 4 elementos
@@ -30,8 +30,6 @@ extern char mapas[MAXLEVEL][ROWS][COLUMNS];	// mapas de configuraci�n
 	// candy1_sopo.c //
 extern char mat_mar[ROWS][COLUMNS];		// matriz de marcas
 extern char pos_sug[6];					// posiciones sugerencia de combinaci�n
-extern void escribe_matriz(char mat[][COLUMNS]);
-extern void escribe_matriz_debug(char mat[][COLUMNS]);
 extern int contar_gelatinas(char mat[][COLUMNS]);
 extern void retardo(int dsecs);
 extern int procesar_touchscreen(char mat[][COLUMNS],
@@ -42,8 +40,6 @@ extern void intercambia_posiciones(char mat[][COLUMNS],
 										int p1X, int p1Y, int p2X, int p2Y);
 extern int calcula_puntuaciones(char mar[][COLUMNS]);
 extern void borra_puntuaciones();
-extern void copia_mapa(char mat[][COLUMNS], int num_map);
-
 
 	// candy1_init.s //
 extern void inicializa_matriz(char matriz[][COLUMNS], int num_mapa);	// 1A

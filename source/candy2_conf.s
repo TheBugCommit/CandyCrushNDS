@@ -15,7 +15,7 @@
 @;								(MAXLEVEL est� definida en "include/candy1.h")
 @;	cada l�mite debe ser un n�mero entre 3 y 99.
 		.global max_mov
-	max_mov:	.byte 20, 27, 11, 25, 24, 8, 21, 30, 25
+	max_mov:	.byte 20, 27, 11, 25, 24, 8, 21, 30, 25, 30, 15, 20
 
 
 @; objetivo de puntos para cada nivel;
@@ -25,7 +25,7 @@
 @;	incrementando a medida que se rompan elementos.
 		.align 2
 		.global pun_obj
-	pun_obj:	.word -1000, -330, -500, 0, -240, -500, -200, -900, 0
+	pun_obj:	.word -1000, -330, -500, 0, -240, -500, -200, -900, 0, -1200, -500, -700
 
 
 

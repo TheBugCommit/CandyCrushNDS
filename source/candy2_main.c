@@ -37,7 +37,7 @@ int gelees;						// n�mero de gelatinas restantes
 		bit 3:	gelatinas  */
 void actualizar_contadores(int code)
 {
-	if (code & 1) printf("\x1b[38m\x1b[1;8H %d", level);
+	if (code & 1) printf("\x1b[38m\x1b[1;8H %d ", level);
 	if (code & 2) printf("\x1b[39m\x1b[2;8H %d  ", points);
 	if (code & 4) printf("\x1b[38m\x1b[1;28H %d ", movements);
 	if (code & 8) printf("\x1b[37m\x1b[2;28H %d ", gelees);
@@ -95,11 +95,9 @@ int main(void)
 		if (initializing)		//////	SECCI�N DE INICIALIZACI�N	//////
 		{
 			inicializa_matriz(matrix, level);
-			//copia_mapa(matrix, level);
 			genera_sprites(matrix);
 			genera_mapa1(matrix);
 			genera_mapa2(matrix);
-			escribe_matriz(matrix);
 			retardo(5);
 			initializing = 0;
 			falling = 0;
@@ -110,7 +108,6 @@ int main(void)
 			{
 				elimina_secuencias(matrix, mat_mar);	// eliminarlas
 				points += calcula_puntuaciones(mat_mar);
-				escribe_matriz(matrix);
 				falling = 1;							// iniciar bajada
 				fall_init = 1;
 			}
@@ -141,14 +138,12 @@ int main(void)
 				}
 				else change = 1;				// sino, revisar estado matriz
 			}
-			escribe_matriz(matrix);			// visualiza bajadas o eliminaciones
 		}
 		else					//////	SECCI�N DE JUGADAS	//////
 		{
 			if (procesar_touchscreen(matrix, &mX, &mY, &dX, &dY))
 			{
 				intercambia_posiciones(matrix, mX, mY, dX, dY);
-				escribe_matriz(matrix);	  // muestra el movimiento por pantalla
 				if (hay_secuencia(matrix))	// si el movimiento es posible
 				{
 					elimina_secuencias(matrix, mat_mar);
@@ -165,7 +160,6 @@ int main(void)
 				{							// deshacer el cambio
 					intercambia_posiciones(matrix, mX, mY, dX, dY);
 				}
-				escribe_matriz(matrix);	// muetra las eliminaciones o el retorno
 			}
 			while (keysHeld() & KEY_TOUCH)		// esperar a liberar la
 			{	swiWaitForVBlank();				// pantalla t�ctil
@@ -229,7 +223,6 @@ int main(void)
 					recombina_elementos(matrix);
 					activa_timer0(1);		// activar timer de movimientos
 					while (timer0_on) swiWaitForVBlank();	// espera final
-					escribe_matriz(matrix);
 					change = 1;					// forzar nueva verificaci�n
 				}								// de combinaciones
 				borra_puntuaciones();
