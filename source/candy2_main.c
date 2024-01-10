@@ -46,12 +46,13 @@ void inicializa_interrupciones()
 /* ----------------------------------------------------------------  */
 int main(void)
 {
-	seed32 = time(NULL);		// fijar semilla de n�meros aleatorios
+	seed32 = time(NULL);
 	init_grafA();
 	inicializa_interrupciones();
 
-	consoleDemoInit();			// inicializaci�n de pantalla de texto
+	consoleDemoInit();			
 	printf("candyNDS (version 2: graficos)\n");
+	printf("\x1b[38m\x1b[4;0H Press A, animate elements");
 
 	inicializa_matriz(matrix, level);
 	genera_sprites(matrix);
@@ -62,7 +63,7 @@ int main(void)
 		do
 		{	swiWaitForVBlank();
 			scanKeys();					
-		} while (!(keysHeld() & (KEY_B)));
+		} while (!(keysHeld() & (KEY_A)));
 
 		sugiere_combinacion(matrix, pos_sug);
 		reducir_elementos(matrix);

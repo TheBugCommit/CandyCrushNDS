@@ -150,18 +150,10 @@ baja_elementos:
 		.Lif_vertical_down_shift:
 			bl baja_verticales
 			cmp r0, #1						@; if(baja_verticales(r4)) return 1;
-			bne .Lelse_vertical_down_shift
-
-			mov r1, #1
-			ldr r0, =update_spr
-			strh r1, [r0]			@; update_spr = 1
-
-			b .Lend_if_vertical_down_shift
+			beq .Lend_if_vertical_down_shift
 		.Lelse_vertical_down_shift:
 			bl baja_laterales				
 		.Lend_if_vertical_down_shift:
-
-		mov r0, r4
 
 		pop {r1, r4, pc}
 
@@ -179,7 +171,7 @@ baja_elementos:
 @;	Resultado:
 @;		R0 = 1 indica que se ha realizado alg�n movimiento. 
 baja_verticales:
-		push {r1-r3, r5-r10, lr}
+		push {r1-r3, r5-r11, lr}
 		
 		mov r7, #0								@; r7 = no movements
 		mov r6, #ROWS*COLUMNS - 1				@; offset = ROWS*COLUMNS - 1
@@ -206,7 +198,7 @@ baja_verticales:
 			bhi .Lfor_vertical_down_shift
 		.Lend_for_vertical_down_shift:
 
-		mov r1, #SOUTH							@; orientation = SOUTH
+		mov r11, #SOUTH							@; orientation = SOUTH
 		mov r5, #0								@; offset = 0
 		.Lfor_first_row:
 			mov r8, #0							@; i = 0
@@ -227,7 +219,7 @@ baja_verticales:
 					mov r10, r0					@; copy r0 element code
 
 					mov r1, #-1					@; r1 = row		
-					mov r2, r5					@; TODO: acabar de crear elements i mourels desde d'alt
+					mov r2, r5					
 					bl crea_elemento			@; create sprite element, in (-1,col) 
 				
 					mov r0, #-1
@@ -250,6 +242,7 @@ baja_verticales:
 				.Lend_if_void_pos_gen_rand:
 
 				mov r0, r6
+				mov r1, r11
 				bl move_offset_by_orientation	
 				mov r6, r0
 
@@ -265,7 +258,7 @@ baja_verticales:
 
 		mov r0, r7							@; return if have been movements
 		
-		pop {r1-r3, r5-r10, pc}
+		pop {r1-r3, r5-r11, pc}
 
 
 
